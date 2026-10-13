@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Sovereign - Territorial Map</title>
+  <title>Sovereign - Mapa Territorial Interactivo</title>
   <meta name="theme-color" content="#000000">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,17 +45,17 @@
       overflow: hidden; overscroll-behavior: none;
     }
 
-    button { font-family: inherit; }
+    button, input, select { font-family: inherit; }
 
     .app {
       position: relative; height: 100dvh; width: 100vw;
       display: flex; flex-direction: column; overflow: hidden;
     }
 
-    /* Header */
+    /* Top Bar */
     .top {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px; border-bottom: 1px solid var(--line);
+      padding: 12px 20px; border-bottom: 1px solid var(--line);
       background: var(--bg); z-index: 10;
     }
     .brand { font-family: var(--serif); font-size: 20px; font-weight: 600; }
@@ -65,169 +65,253 @@
       font-size: 13px; font-weight: 600; text-decoration: none;
     }
 
-    /* Main Container */
-    .content-container {
-      flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 16px; gap: 16px; padding-bottom: 60px;
+    /* Interactive Map Canvas Container */
+    .map-stage {
+      flex: 1; position: relative; background: var(--surface);
+      overflow: hidden; cursor: grab; user-select: none;
+    }
+    .map-stage:active { cursor: grabbing; }
+
+    #mapSvg {
+      width: 100%; height: 100%; display: block;
+      transition: transform 0.05s ease-out;
     }
 
-    /* Map Stage (4 Regions) */
-    .map-container {
-      background: var(--surface); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 16px; min-height: 280px;
-      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px;
-      box-shadow: var(--shadow); position: relative;
+    .region-shape {
+      fill: var(--card); stroke: var(--ink); stroke-width: 2;
+      transition: fill 0.2s, stroke-width 0.2s; cursor: pointer;
+    }
+    .region-shape:hover { fill: var(--surface); stroke-width: 3; }
+    .region-shape.selected { fill: var(--surface); stroke: var(--ink); stroke-width: 4; }
+
+    .map-label {
+      font-family: var(--serif); font-size: 14px; font-weight: 600;
+      fill: var(--ink); pointer-events: none; text-anchor: middle;
     }
 
-    .map-region-box {
+    /* Map Controls Overlay */
+    .map-controls-hint {
+      position: absolute; top: 12px; right: 12px; z-index: 15;
       background: var(--card); border: 1px solid var(--line); border-radius: 8px;
-      padding: 14px; display: flex; flex-direction: column; justify-content: space-between;
-      cursor: pointer; transition: transform 0.1s, border-color 0.1s; position: relative;
+      padding: 6px 12px; font-size: 11px; font-weight: 600; color: var(--muted);
+      box-shadow: var(--shadow); pointer-events: none;
     }
-    .map-region-box:hover { border-color: var(--ink); transform: scale(0.99); }
-    .map-region-box.selected { border: 2px solid var(--ink); }
 
-    .map-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
-    .map-region-title { font-family: var(--serif); font-weight: 600; font-size: 15px; margin-top: 6px; }
-
-    /* Collapsible List */
-    .list-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
-    .list-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .list-title { font-family: var(--serif); font-size: 18px; margin: 0; }
-    .toggle-list-btn { background: none; border: 0; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); }
-    
-    .list-body { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .list-body.minimized { display: none; }
+    /* Bottom Collapsible Regional List */
+    .bottom-drawer {
+      background: var(--card); border-top: 1px solid var(--line);
+      max-height: 220px; display: flex; flex-direction: column;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.05); z-index: 10;
+    }
+    .drawer-header {
+      padding: 10px 16px; display: flex; justify-content: space-between;
+      align-items: center; cursor: pointer; border-bottom: 1px solid var(--line);
+    }
+    .drawer-title { font-family: var(--serif); font-size: 16px; margin: 0; font-weight: 600; }
+    .drawer-body { overflow-y: auto; padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .drawer-body.minimized { display: none; }
 
     .region-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; background: var(--surface); border-radius: 8px; border: 1px solid var(--line);
-      cursor: pointer; transition: background 0.1s;
+      padding: 8px 12px; background: var(--surface); border-radius: 8px; border: 1px solid var(--line);
+      cursor: pointer; font-size: 13px;
     }
-    .region-row:hover { background: var(--line); }
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+    .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel */
+    /* Left Sidebar Panel (Nation Info & Flag) */
     .side-panel {
-      position: absolute; left: 16px; top: 76px; width: 220px;
+      position: absolute; left: 16px; top: 16px; width: 230px;
       background: var(--card); border: 1px solid var(--line);
       border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 10px; z-index: 20;
+      display: flex; flex-direction: column; gap: 8px; z-index: 20;
     }
 
     .flag-box {
-      width: 100%; height: 50px; border: 1px solid var(--ink);
+      width: 100%; height: 44px; border: 1px solid var(--ink);
       background: repeating-linear-gradient(45deg, var(--ink), var(--ink) 8px, var(--bg) 8px, var(--bg) 16px);
       border-radius: 6px; display: grid; place-items: center;
     }
-    .flag-label { background: var(--bg); padding: 2px 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--ink); }
+    .flag-label { background: var(--bg); padding: 2px 6px; font-size: 10px; font-weight: 700; border: 1px solid var(--ink); }
 
-    .info-group { display: flex; flex-direction: column; gap: 2px; }
-    .info-label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
-    .info-value { font-size: 13px; font-weight: 600; }
+    .info-group { display: flex; flex-direction: column; gap: 1px; }
+    .info-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+    .info-value { font-size: 12px; font-weight: 600; }
 
     .manage-btn {
-      margin-top: 4px; width: 100%; height: 36px; border-radius: 999px;
+      margin-top: 4px; width: 100%; height: 34px; border-radius: 999px;
       border: 1px solid var(--ink); background: var(--ink); color: var(--bg);
       font-weight: 600; font-size: 12px; cursor: pointer;
     }
 
-    /* Central Modal Panel */
+    /* Central Management Modal */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      display: grid; place-items: center; z-index: 30; padding: 20px;
+      display: grid; place-items: center; z-index: 30; padding: 16px;
     }
     .center-modal {
-      width: min(100%, 400px); background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 14px;
+      width: min(100%, 460px); max-height: 85dvh; overflow-y: auto;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 12px;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; }
     .modal-title { font-family: var(--serif); font-size: 20px; margin: 0; }
     .close-btn { background: none; border: 0; font-size: 20px; cursor: pointer; color: var(--ink); }
 
-    .status-row {
-      display: flex; align-items: center; gap: 10px; padding: 10px;
-      background: var(--surface); border-radius: 8px; border: 1px solid var(--line);
+    .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .tab-btn {
+      flex: 1; padding: 6px; border-radius: 6px; border: 1px solid var(--line);
+      background: var(--surface); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink);
     }
-    .status-circle { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+    .tab-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .stat-card { padding: 10px; background: var(--surface); border-radius: 8px; border: 1px solid var(--line); }
-    .stat-card span { display: block; font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
-    .stat-card b { font-size: 14px; color: var(--ink); }
+    .tab-content { display: flex; flex-direction: column; gap: 10px; }
 
-    /* Floating Version Badge */
+    .upgrade-card {
+      background: var(--surface); padding: 12px; border-radius: 8px;
+      border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;
+    }
+    .upgrade-card b { font-size: 13px; }
+    .upgrade-card p { margin: 0; font-size: 11px; color: var(--muted); }
+
+    .btn-action {
+      height: 34px; border-radius: 6px; border: 1px solid var(--ink);
+      background: var(--ink); color: var(--bg); font-weight: 600; font-size: 12px; cursor: pointer;
+    }
+
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+
     .version-badge {
-      position: fixed; bottom: 12px; right: 12px; z-index: 50;
-      background: var(--card); border: 1px solid var(--line); padding: 4px 10px;
-      border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--muted);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1); pointer-events: none;
+      position: fixed; bottom: 8px; right: 8px; z-index: 50;
+      background: var(--card); border: 1px solid var(--line); padding: 3px 8px;
+      border-radius: 999px; font-size: 10px; font-weight: 600; color: var(--muted);
+      pointer-events: none;
     }
   </style>
 </head>
 <body class="auto-theme">
 
-  <div class="app" style="position:relative;">
+  <div class="app">
     <header class="top">
-      <div class="brand">Territorial Map</div>
-      <a href="index.html" class="back-btn">‹ Back to Hub</a>
+      <div class="brand">Mapa Territorial</div>
+      <a href="index.html" class="back-btn">‹ Volver al Menú</a>
     </header>
 
-    <div class="content-container">
-      <!-- 4 Regions Map Container -->
-      <div class="map-container" id="mapContainer"></div>
+    <main class="map-stage" id="mapStage">
+      <div class="map-controls-hint">Navegación: WASD | Zoom: Rueda / Tecla Z</div>
 
-      <!-- Collapsible Regional List -->
-      <div class="list-card">
-        <div class="list-header" onclick="toggleList()">
-          <h3 class="list-title">Regional Status List</h3>
-          <button class="toggle-list-btn" id="toggleBtn">[-] Minimize</button>
+      <svg id="mapSvg" viewBox="0 0 800 600">
+        <g id="mapGroup">
+          <!-- Región 0: Capital Core -->
+          <path d="M 150 100 L 380 90 L 390 280 L 160 270 Z" class="region-shape" id="shape-0" onclick="selectRegion(0)"/>
+          <text x="270" y="190" class="map-label">Capital Core</text>
+          <circle cx="360" cy="110" r="7" id="dot-map-0" class="status-dot"/>
+
+          <!-- Región 1: Northern Iron Hills -->
+          <path d="M 380 90 L 650 100 L 640 290 L 390 280 Z" class="region-shape" id="shape-1" onclick="selectRegion(1)"/>
+          <text x="510" y="190" class="map-label">Northern Iron Hills</text>
+          <circle cx="620" cy="120" r="7" id="dot-map-1" class="status-dot"/>
+
+          <!-- Región 2: Western Coast -->
+          <path d="M 160 270 L 390 280 L 380 480 L 140 460 Z" class="region-shape" id="shape-2" onclick="selectRegion(2)"/>
+          <text x="260" y="380" class="map-label">Western Coast</text>
+          <circle cx="360" cy="300" r="7" id="dot-map-2" class="status-dot"/>
+
+          <!-- Región 3: Southern Wasteland -->
+          <path d="M 390 280 L 640 290 L 630 490 L 380 480 Z" class="region-shape" id="shape-3" onclick="selectRegion(3)"/>
+          <text x="510" y="380" class="map-label">Southern Wasteland</text>
+          <circle cx="610" cy="310" r="7" id="dot-map-3" class="status-dot"/>
+        </g>
+      </svg>
+
+      <!-- Panel Lateral Izquierdo -->
+      <div class="side-panel" id="sidePanel" hidden>
+        <div class="flag-box"><span class="flag-label" id="flagLabel">ESTADO</span></div>
+        <div class="info-group">
+          <span class="info-label">Nación</span>
+          <span class="info-value" id="sideNationName">-</span>
         </div>
-        <div class="list-body" id="regionListBody"></div>
+        <div class="info-group">
+          <span class="info-label">Región</span>
+          <span class="info-value" id="sideRegionName">-</span>
+        </div>
+        <button class="manage-btn" id="btnOpenManage" onclick="openCentralManagement()">Gestionar Región</button>
       </div>
+    </main>
+
+    <!-- Lista Desplegable Inferior -->
+    <div class="bottom-drawer">
+      <div class="drawer-header" onclick="toggleDrawer()">
+        <h3 class="drawer-title">Lista de Regiones</h3>
+        <span id="drawerToggleBtn" style="font-size:12px; font-weight:600; color:var(--muted);">[-] Minimizar</span>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <!-- Left Side Box (Appears on region selection) -->
-    <div class="side-panel" id="sidePanel" hidden>
-      <div class="flag-box"><span class="flag-label" id="flagLabel">FLAG</span></div>
-      <div class="info-group">
-        <span class="info-label">Sovereign State</span>
-        <span class="info-value" id="sideNationName">-</span>
-      </div>
-      <div class="info-group">
-        <span class="info-label">Region Name</span>
-        <span class="info-value" id="sideRegionName">-</span>
-      </div>
-      <div class="info-group">
-        <span class="info-label">Lore / Info</span>
-        <span class="info-value" id="sideEnvInfo">-</span>
-      </div>
-      <button class="manage-btn" id="btnOpenManage" onclick="openCentralManagement()">Manage Territory</button>
-    </div>
-
-    <!-- Floating Version Badge -->
-    <div class="version-badge">Ver: v1.0.4-beta</div>
+    <div class="version-badge">Ver: v1.0.5-beta</div>
   </div>
 
-  <!-- Central Management Modal -->
+  <!-- Modal Central de Gestión y Mejoras -->
   <div class="modal-overlay" id="manageModal" hidden>
     <div class="center-modal">
       <div class="modal-header">
-        <h3 class="modal-title" id="modalRegionTitle">Management</h3>
+        <h3 class="modal-title" id="modalRegionTitle">Gestión de Región</h3>
         <button class="close-btn" onclick="closeCentralManagement()">×</button>
       </div>
-      <div class="status-row">
-        <div class="status-circle" id="modalStatusDot"></div>
-        <div>
-          <div style="font-size:13px; font-weight:700;" id="modalStatusText">Status</div>
-          <div style="font-size:11px; color:var(--muted);" id="modalPovertyText">Condition</div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabFacBtn" onclick="switchTab('fac')">Fábricas</button>
+        <button class="tab-btn" id="tabInfraBtn" onclick="switchTab('infra')">Infraestructura</button>
+        <button class="tab-btn" id="tabLogisBtn" onclick="switchTab('logis')">Trenes & Logística</button>
+      </div>
+
+      <!-- Pestaña 1: Fábricas -->
+      <div class="tab-content" id="tabFac">
+        <div class="upgrade-card">
+          <b>Complejo Industrial</b>
+          <p>Nivel Actual: <span id="facLvText">1</span> / 10</p>
+          <p id="facCostReq">Costo: 500 Oro, 100 Acero</p>
+          <button class="btn-action" onclick="upgradeFactory()">Construir / Mejorar Fábrica</button>
         </div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card"><span>Production Index</span><b id="modalProdIndex">1.0x</b></div>
-        <div class="stat-card"><span>Factories</span><b id="modalFactories">0</b></div>
-        <div class="stat-card"><span>Steel Reserve</span><b id="modalSteel">0 Tons</b></div>
-        <div class="stat-card"><span>Oil Reserve</span><b id="modalOil">0 Bbl</b></div>
+
+      <!-- Pestaña 2: Infraestructura -->
+      <div class="tab-content" id="tabInfra" hidden>
+        <div class="upgrade-card">
+          <b>Red de Vías de Tren</b>
+          <p>Nivel de Vías: <span id="railLvText">0</span> / 5</p>
+          <p>Costo: 300 Oro, 80 Acero</p>
+          <button class="btn-action" onclick="upgradeInfra('rail')">Construir Vías de Tren</button>
+        </div>
+        <div class="upgrade-card">
+          <b>Viviendas de Población</b>
+          <p>Nivel de Casas: <span id="houseLvText">1</span> / 5</p>
+          <p>Costo: 200 Oro, 150 Madera</p>
+          <button class="btn-action" onclick="upgradeInfra('house')">Expandir Viviendas</button>
+        </div>
+        <div class="upgrade-card">
+          <b>Edificios Públicos / Gobernanza</b>
+          <p>Nivel de Edificios: <span id="pubLvText">1</span> / 5</p>
+          <p>Costo: 400 Oro</p>
+          <button class="btn-action" onclick="upgradeInfra('public')">Construir Edificio Público</button>
+        </div>
+      </div>
+
+      <!-- Pestaña 3: Trenes y Logística -->
+      <div class="tab-content" id="tabLogis" hidden>
+        <div class="upgrade-card">
+          <b>Mover Recursos por Tren</b>
+          <p id="trainReqText">Requiere Vías de Tren Nivel 1+</p>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            <select id="transferResource" style="padding:6px; border-radius:6px; border:1px solid var(--line);">
+              <option value="steel">Acero (50 Unidades)</option>
+              <option value="oil">Petróleo (20 Unidades)</option>
+              <option value="wood">Madera (100 Unidades)</option>
+            </select>
+            <select id="transferTarget" style="padding:6px; border-radius:6px; border:1px solid var(--line);"></select>
+            <button class="btn-action" id="btnSendTrain" onclick="sendResourceTrain()">Enviar Tren de Carga</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -237,101 +321,165 @@
     let saves = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     let activeWorld = saves.length > 0 ? saves[0] : null;
 
-    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Player Empire";
-    const playerLore = (activeWorld && activeWorld.desc.trim() !== "") ? activeWorld.desc : "Grand Strategy State";
+    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Jugador";
 
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, poverty: "Prosperous", prodIndex: "1.80x", factories: 4, steel: 450, oil: 200 },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 7, poverty: "Impoverished", prodIndex: "0.90x", factories: 2, steel: 120, oil: 40 },
-      { id: 2, name: "Western Coast", owner: "Neutral Republic", isPlayer: false, status: 4, poverty: "Stable", prodIndex: "1.20x", factories: 1, steel: 80, oil: 310 },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 10, poverty: "Critical Poverty", prodIndex: "0.45x", factories: 0, steel: 10, oil: 5 }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1 },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 7, factoryLv: 1, railLv: 0, houseLv: 1, pubLv: 0 },
+      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 4, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1 },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 10, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0 }
     ];
 
     let selectedIndex = null;
-    let listMinimized = false;
+    let drawerMinimized = false;
 
-    // 10-tone color scale from Green (1) to Red/Orange (10)
+    // Map WASD and Zoom Controls
+    let panX = 0, panY = 0, scale = 1;
+    const mapGroup = document.getElementById('mapGroup');
+
+    function updateMapTransform() {
+      mapGroup.setAttribute('transform', `translate(${panX}, ${panY}) scale(${scale})`);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const step = 20;
+      if (e.key === 'w' || e.key === 'W') panY += step;
+      if (e.key === 's' || e.key === 'S') panY -= step;
+      if (e.key === 'a' || e.key === 'A') panX += step;
+      if (e.key === 'd' || e.key === 'D') panX -= step;
+      if (e.key === 'z' || e.key === 'Z') scale = scale === 1 ? 1.4 : (scale === 1.4 ? 1.8 : 1);
+      updateMapTransform();
+    });
+
+    document.getElementById('mapStage').addEventListener('wheel', (e) => {
+      e.preventDefault();
+      scale += e.deltaY < 0 ? 0.1 : -0.1;
+      scale = Math.min(Math.max(0.6, scale), 2.5);
+      updateMapTransform();
+    });
+
     function getUrgencyColor(val) {
       const hue = ((10 - val) / 9) * 120;
       return `hsl(${hue}, 85%, 45%)`;
     }
 
     function renderView() {
-      const mapContainer = document.getElementById('mapContainer');
-      const listBody = document.getElementById('regionListBody');
-      mapContainer.innerHTML = '';
-      listBody.innerHTML = '';
+      const drawerBody = document.getElementById('drawerBody');
+      drawerBody.innerHTML = '';
 
       regions.forEach((r, i) => {
         const color = getUrgencyColor(r.status);
+        const dotMap = document.getElementById(`dot-map-${i}`);
+        if (dotMap) dotMap.style.fill = color;
 
-        // Map box
-        const box = document.createElement('div');
-        box.className = `map-region-box ${selectedIndex === i ? 'selected' : ''}`;
-        box.onclick = () => selectRegion(i);
-        box.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:700; color:var(--muted);">${r.owner}</span>
-            <div class="map-dot" style="background:${color}"></div>
-          </div>
-          <div class="map-region-title">${r.name}</div>
-        `;
-        mapContainer.appendChild(box);
-
-        // List row
         const row = document.createElement('div');
         row.className = 'region-row';
         row.onclick = () => selectRegion(i);
         row.innerHTML = `
-          <span><b>${r.name}</b> <small style="color:var(--muted);">(${r.owner})</small></span>
+          <span><b>${r.name}</b> (${r.owner})</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:12px; font-weight:600;">Urgency: ${r.status}/10</span>
+            <span style="font-weight:600;">Urgencia: ${r.status}/10</span>
             <div class="status-dot" style="background:${color}"></div>
           </div>
         `;
-        listBody.appendChild(row);
+        drawerBody.appendChild(row);
       });
     }
 
     function selectRegion(index) {
       selectedIndex = index;
       const r = regions[index];
-      renderView();
+
+      document.querySelectorAll('.region-shape').forEach((shape, i) => {
+        shape.classList.toggle('selected', i === index);
+      });
 
       document.getElementById('sideNationName').textContent = r.owner;
       document.getElementById('sideRegionName').textContent = r.name;
-      document.getElementById('sideEnvInfo').textContent = playerLore.substring(0, 30) + "...";
-      document.getElementById('flagLabel').textContent = r.owner.substring(0, 10);
+      document.getElementById('flagLabel').textContent = r.owner.substring(0, 8);
 
       document.getElementById('btnOpenManage').style.display = r.isPlayer ? 'block' : 'none';
       document.getElementById('sidePanel').hidden = false;
     }
 
-    function toggleList() {
-      listMinimized = !listMinimized;
-      document.getElementById('regionListBody').classList.toggle('minimized', listMinimized);
-      document.getElementById('toggleBtn').textContent = listMinimized ? '[+] Expand' : '[-] Minimize';
+    function toggleDrawer() {
+      drawerMinimized = !drawerMinimized;
+      document.getElementById('drawerBody').classList.toggle('minimized', drawerMinimized);
+      document.getElementById('drawerToggleBtn').textContent = drawerMinimized ? '[+] Expandir' : '[-] Minimizar';
     }
 
     function openCentralManagement() {
       if (selectedIndex === null) return;
       const r = regions[selectedIndex];
 
-      document.getElementById('modalRegionTitle').textContent = `${r.name} - Management`;
-      document.getElementById('modalStatusDot').style.background = getUrgencyColor(r.status);
-      document.getElementById('modalStatusText').textContent = `Urgency Level: ${r.status}/10`;
-      document.getElementById('modalPovertyText').textContent = `Condition: ${r.poverty}`;
-      
-      document.getElementById('modalProdIndex').textContent = r.prodIndex;
-      document.getElementById('modalFactories').textContent = `${r.factories} Active`;
-      document.getElementById('modalSteel').textContent = `${r.steel} Tons`;
-      document.getElementById('modalOil').textContent = `${r.oil} Bbl`;
-
+      document.getElementById('modalRegionTitle').textContent = `${r.name}`;
+      updateModalUI();
       document.getElementById('manageModal').hidden = false;
     }
 
     function closeCentralManagement() {
       document.getElementById('manageModal').hidden = true;
+    }
+
+    function switchTab(tab) {
+      ['fac', 'infra', 'logis'].forEach(t => {
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).hidden = t !== tab;
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).classList.toggle('active', t === tab);
+      });
+    }
+
+    function updateModalUI() {
+      const r = regions[selectedIndex];
+      document.getElementById('facLvText').textContent = r.factoryLv;
+      document.getElementById('railLvText').textContent = r.railLv;
+      document.getElementById('houseLvText').textContent = r.houseLv;
+      document.getElementById('pubLvText').textContent = r.pubLv;
+
+      if (r.factoryLv >= 5) {
+        document.getElementById('facCostReq').textContent = "Costo: 1,200 Oro, 300 Acero, 100 Petróleo (Nivel 5+)";
+      } else {
+        document.getElementById('facCostReq').textContent = "Costo: 500 Oro, 100 Acero";
+      }
+
+      // Populate Target Dropdown for Resource Train
+      const targetSelect = document.getElementById('transferTarget');
+      targetSelect.innerHTML = '';
+      regions.filter((_, i) => i !== selectedIndex).forEach(tgt => {
+        const opt = document.createElement('option');
+        opt.value = tgt.id;
+        opt.textContent = `Hacia: ${tgt.name}`;
+        targetSelect.appendChild(opt);
+      });
+
+      const canTrain = r.railLv > 0;
+      document.getElementById('btnSendTrain').disabled = !canTrain;
+      document.getElementById('trainReqText').textContent = canTrain ? `Vías de Tren Nivel ${r.railLv} listas` : 'Requiere Vías de Tren Nivel 1+';
+    }
+
+    function upgradeFactory() {
+      const r = regions[selectedIndex];
+      if (r.factoryLv >= 10) return alert("¡Nivel máximo de fábricas alcanzado!");
+      r.factoryLv++;
+      updateModalUI();
+      alert(`Fábrica mejorada a Nivel ${r.factoryLv}`);
+    }
+
+    function upgradeInfra(type) {
+      const r = regions[selectedIndex];
+      if (type === 'rail') r.railLv = Math.min(5, r.railLv + 1);
+      if (type === 'house') r.houseLv = Math.min(5, r.houseLv + 1);
+      if (type === 'public') r.pubLv = Math.min(5, r.pubLv + 1);
+      updateModalUI();
+      alert("Infraestructura mejorada.");
+    }
+
+    function sendResourceTrain() {
+      const r = regions[selectedIndex];
+      if (r.railLv <= 0) return alert("Necesitas construir vías de tren en esta región primero.");
+      const targetId = document.getElementById('transferTarget').value;
+      const resource = document.getElementById('transferResource').value;
+      const targetRegion = regions.find(item => item.id == targetId);
+      alert(`Tren enviado con ${resource} desde ${r.name} hacia ${targetRegion.name}.`);
     }
 
     renderView();
