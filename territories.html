@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sovereign - Mapa Territorial Interactivo</title>
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#0F171E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;500;600&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
       --success: #3FB950;
       --water: #0D1B2A;
       --territory: #1B3A2B;
-      --territory-hover: #224A37;
+      --territory-hover: #26543E;
       --serif: "Newsreader", Georgia, serif;
       --sans: "DM Sans", system-ui, sans-serif;
       --radius: 12px;
@@ -62,7 +62,7 @@
       position: absolute; top: 12px; left: 12px; z-index: 20;
       background: var(--card); border: 1px solid var(--line);
       border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 6px; min-width: 250px;
+      display: flex; flex-direction: column; gap: 6px; min-width: 270px;
     }
     .hud-title {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -92,7 +92,7 @@
     }
     .map-stage:active { cursor: grabbing; }
 
-    /* Ensanchado del Mapa */
+    /* Isla Unificada en Mapa Cuadrado */
     .square-map-wrapper {
       width: min(92vw, 82vh); height: min(78vw, 68vh);
       border: 2px solid var(--line); background: var(--water);
@@ -102,16 +102,16 @@
     #mapSvg { width: 100%; height: 100%; display: block; }
 
     .region-shape {
-      fill: var(--territory); stroke: var(--line); stroke-width: 2;
+      fill: var(--territory); stroke: #0D1B2A; stroke-width: 3;
       transition: fill 0.2s, stroke-width 0.2s; cursor: pointer;
     }
-    .region-shape:hover { fill: var(--territory-hover); stroke-width: 3; stroke: var(--ink); }
-    .region-shape.selected { fill: var(--territory-hover); stroke: var(--ink); stroke-width: 4; }
+    .region-shape:hover { fill: var(--territory-hover); stroke: var(--ink); stroke-width: 4; }
+    .region-shape.selected { fill: var(--territory-hover); stroke: #FFFFFF; stroke-width: 4; }
 
     .map-label {
       font-family: var(--serif); font-size: 13px; font-weight: 600;
       fill: #FFFFFF; pointer-events: none; text-anchor: middle;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.9);
     }
 
     .map-controls-hint {
@@ -155,7 +155,7 @@
     }
     .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel con Bandera Real */
+    /* Left Sidebar Panel con Bandera SVG NAtiva */
     .side-panel {
       position: absolute; left: 12px; top: 190px; width: 230px;
       background: var(--card); border: 1px solid var(--line);
@@ -170,7 +170,7 @@
       background: var(--surface); border-radius: 6px; overflow: hidden;
       display: grid; place-items: center;
     }
-    .flag-box img { width: 100%; height: 100%; object-fit: cover; }
+    .flag-box svg { width: 100%; height: 100%; display: block; }
 
     .info-group { display: flex; flex-direction: column; gap: 1px; }
     .info-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
@@ -258,7 +258,7 @@
       <div class="resource-hud" id="resourceHud">
         <div class="hud-title">
           <span id="hudScopeTitle">Recursos del País</span>
-          <span class="date-badge" id="gameDateText">Día 1, 1936</span>
+          <span class="date-badge" id="gameDateText">Día 1, 1936 (00:30)</span>
         </div>
         <div class="hud-grid" id="hudMainGrid">
           <div class="res-item"><span>🪙 Oro:</span> <b id="resValGold">12,000</b></div>
@@ -278,35 +278,39 @@
       <!-- Control de Tiempo Flotante -->
       <div class="time-control-hud">
         <button class="time-btn" id="btnPause" onclick="setTimeSpeed(0)" title="Pausar">II</button>
-        <button class="time-btn" id="btnSlow" onclick="setTimeSpeed(300)" title="Lento (5 min/día)">🐢</button>
-        <button class="time-btn active" id="btnNorm" onclick="setTimeSpeed(120)" title="Normal (2 min/día)">▶</button>
-        <button class="time-btn" id="btnFast" onclick="setTimeSpeed(30)" title="Rápido (30 seg/día)">⏩</button>
+        <button class="time-btn" id="btnSlow" onclick="setTimeSpeed(90)" title="Lento (1:30 min/día)">🐢</button>
+        <button class="time-btn active" id="btnNorm" onclick="setTimeSpeed(30)" title="Normal (30 seg/día)">▶</button>
+        <button class="time-btn" id="btnFast" onclick="setTimeSpeed(15)" title="Rápido (15 seg/día)">⏩</button>
       </div>
 
-      <!-- Mapa Cuadrado Estilo Realista -->
+      <!-- Isla Unificada Continua en SVG -->
       <div class="square-map-wrapper" id="mapWrapper">
         <svg id="mapSvg" viewBox="0 0 500 500">
           <g id="mapGroup">
-            <path d="M 10 10 L 245 10 L 245 245 L 10 245 Z" class="region-shape" id="shape-0" onclick="selectRegion(0)"/>
-            <text x="127" y="127" class="map-label">Capital Core</text>
-            <circle cx="225" cy="25" r="7" id="dot-map-0" class="status-dot"/>
+            <!-- Isla Unificada - Región 0: Capital Core (Noroeste) -->
+            <path d="M 120 50 C 200 30, 240 40, 250 80 L 250 250 L 50 250 C 40 180, 50 100, 120 50 Z" class="region-shape" id="shape-0" onclick="selectRegion(0)"/>
+            <text x="140" y="150" class="map-label">Capital Core</text>
+            <circle cx="210" cy="80" r="7" id="dot-map-0" class="status-dot"/>
 
-            <path d="M 255 10 L 490 10 L 490 245 L 255 245 Z" class="region-shape" id="shape-1" onclick="selectRegion(1)"/>
-            <text x="372" y="127" class="map-label">Northern Iron Hills</text>
-            <circle cx="470" cy="25" r="7" id="dot-map-1" class="status-dot"/>
+            <!-- Isla Unificada - Región 1: Northern Iron Hills (Noreste) -->
+            <path d="M 250 80 C 260 40, 320 30, 380 50 C 450 100, 460 180, 450 250 L 250 250 Z" class="region-shape" id="shape-1" onclick="selectRegion(1)"/>
+            <text x="360" y="150" class="map-label">Northern Iron Hills</text>
+            <circle cx="420" cy="90" r="7" id="dot-map-1" class="status-dot"/>
 
-            <path d="M 10 255 L 245 255 L 245 490 L 10 490 Z" class="region-shape" id="shape-2" onclick="selectRegion(2)"/>
-            <text x="127" y="372" class="map-label">Western Coast</text>
-            <circle cx="225" cy="270" r="7" id="dot-map-2" class="status-dot"/>
+            <!-- Isla Unificada - Región 2: Western Coast (Suroeste) -->
+            <path d="M 50 250 L 250 250 L 250 450 C 180 460, 100 450, 50 380 C 30 320, 40 280, 50 250 Z" class="region-shape" id="shape-2" onclick="selectRegion(2)"/>
+            <text x="140" y="350" class="map-label">Western Coast</text>
+            <circle cx="210" cy="410" r="7" id="dot-map-2" class="status-dot"/>
 
-            <path d="M 255 255 L 490 255 L 490 490 L 255 490 Z" class="region-shape" id="shape-3" onclick="selectRegion(3)"/>
-            <text x="372" y="372" class="map-label">Southern Wasteland</text>
-            <circle cx="470" cy="270" r="7" id="dot-map-3" class="status-dot"/>
+            <!-- Isla Unificada - Región 3: Southern Wasteland (Sureste) -->
+            <path d="M 250 250 L 450 250 C 460 280, 470 320, 450 380 C 400 450, 320 460, 250 450 Z" class="region-shape" id="shape-3" onclick="selectRegion(3)"/>
+            <text x="360" y="350" class="map-label">Southern Wasteland</text>
+            <circle cx="420" cy="410" r="7" id="dot-map-3" class="status-dot"/>
           </g>
         </svg>
       </div>
 
-      <!-- Panel Lateral Izquierdo con Bandera Real -->
+      <!-- Panel Lateral Izquierdo -->
       <div class="side-panel" id="sidePanel" hidden>
         <div class="side-panel-header">
           <div class="flag-box" id="sideFlagBox"></div>
@@ -333,10 +337,10 @@
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <div class="version-badge">Ver: v1.1.0-beta</div>
+    <div class="version-badge">Ver: v1.1.1-beta</div>
   </div>
 
-  <!-- Modal Central de Gestión / Info -->
+  <!-- Modal Central -->
   <div class="modal-overlay" id="manageModal" hidden>
     <div class="center-modal">
       <div class="modal-header">
@@ -411,7 +415,7 @@
         </div>
       </div>
 
-      <!-- Pestaña 5: Información (Regiones Extranjeras) -->
+      <!-- Pestaña 5: Información -->
       <div class="tab-content" id="tabInfo" hidden>
         <div class="upgrade-card">
           <b>Información de Soberanía Extranjera</b>
@@ -438,11 +442,11 @@
     const STORAGE_KEY = "sovereign_worlds_v5";
     let saves = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     let activeWorld = saves.length > 0 ? saves[0] : null;
-    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Prusiano";
+    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Reino de Prusia";
 
-    // URLs de Banderas Reales
-    const FLAG_PRUSSIA = "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Prussia_%281892-1918%29.svg";
-    const FLAG_SPAIN_REP = "https://upload.wikimedia.org/wikipedia/commons/d/dd/Flag_of_the_Second_Spanish_Republic.svg";
+    // SVGs Vectoriales Nativos de Banderas
+    const SVG_PRUSSIA = `<svg viewBox="0 0 600 360" width="100%" height="100%"><rect width="600" height="360" fill="#FFFFFF"/><rect width="600" height="70" fill="#000000"/><rect y="290" width="600" height="70" fill="#000000"/><path d="M 300 130 C 270 130, 250 160, 250 190 C 250 220, 270 240, 300 240 C 330 240, 350 220, 350 190 C 350 160, 330 130, 300 130 Z" fill="none" stroke="#000000" stroke-width="8"/><path d="M 280 180 L 320 180 M 300 160 L 300 200" stroke="#000000" stroke-width="6"/></svg>`;
+    const SVG_SPAIN_REP = `<svg viewBox="0 0 600 360" width="100%" height="100%"><rect width="600" height="120" fill="#AD1519"/><rect y="120" width="600" height="120" fill="#FABD00"/><rect y="240" width="600" height="120" fill="#4B0082"/></svg>`;
 
     const eventPool = [
       { text: "Huelga de obreros ferroviarios exigiendo mejores pagas.", opt1: "Conceder subsidio", opt2: "Forzar trabajo obligado", effText1: "-300 🪙 Oro, Urgencia reducida", effText2: "+50 ⚙️ Acero, -100 🪙 Oro, Urgencia reducida", eff1: { gold: -300 }, eff2: { gold: -100, steel: 50 } },
@@ -452,20 +456,22 @@
     ];
 
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
-      { id: 2, name: "Western Coast", owner: "República Española", isPlayer: false, flag: FLAG_SPAIN_REP, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
+      { id: 2, name: "Western Coast", owner: "República Española", isPlayer: false, flagSvg: SVG_SPAIN_REP, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
     ];
 
     let selectedIndex = null;
     let drawerMinimized = false;
     const activeToasts = [];
 
+    // Sistema de Tiempo y Conteo Regresivo
     let gameDay = 1, gameYear = 1936;
-    let secondsPerDay = 120;
+    let secondsPerDay = 30; // Modo Normal: 30 segundos por defecto
+    let secondsRemaining = 30;
     let timeTimer = null;
-    let savedSpeedBeforePause = 120;
+    let savedSpeedBeforePause = 30;
 
     function setTimeSpeed(seconds) {
       if (timeTimer) clearInterval(timeTimer);
@@ -478,17 +484,34 @@
       }
 
       savedSpeedBeforePause = seconds;
-      if (seconds === 300) document.getElementById('btnSlow').classList.add('active');
-      if (seconds === 120) document.getElementById('btnNorm').classList.add('active');
-      if (seconds === 30) document.getElementById('btnFast').classList.add('active');
+      secondsPerDay = seconds;
+      secondsRemaining = seconds;
 
-      timeTimer = setInterval(advanceOneDay, seconds * 1000);
+      if (seconds === 90) document.getElementById('btnSlow').classList.add('active');
+      if (seconds === 30) document.getElementById('btnNorm').classList.add('active');
+      if (seconds === 15) document.getElementById('btnFast').classList.add('active');
+
+      timeTimer = setInterval(tickSecond, 1000);
+    }
+
+    function tickSecond() {
+      secondsRemaining--;
+      if (secondsRemaining <= 0) {
+        advanceOneDay();
+        secondsRemaining = secondsPerDay;
+      }
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsRemaining / 60).toString().padStart(2, '0');
+      const secs = (secondsRemaining % 60).toString().padStart(2, '0');
+      document.getElementById('gameDateText').textContent = `Día ${gameDay}, ${gameYear} (${mins}:${secs})`;
     }
 
     function advanceOneDay() {
       gameDay++;
       if (gameDay > 365) { gameDay = 1; gameYear++; }
-      document.getElementById('gameDateText').textContent = `Día ${gameDay}, ${gameYear}`;
 
       regions.forEach(r => {
         if (r.isPlayer) {
@@ -499,7 +522,7 @@
         }
       });
 
-      notify(`📅 <b>Día ${gameDay} iniciado:</b> Producción y costes diarios aplicados.`);
+      notify(`📅 <b>Día ${gameDay} iniciado:</b> Producción y costes aplicados.`);
       updateHUD();
     }
 
@@ -630,10 +653,11 @@
         const row = document.createElement('div');
         row.className = 'region-row';
         row.onclick = () => selectRegion(i);
+        // Ocultado el texto "Urgencia: X/6", mostrando solo pendientes
         row.innerHTML = `
           <span><b>${r.name}</b> (${r.owner})</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-weight:600;">Urgencia: ${r.status}/6 (${r.urgenciesCount}/5)</span>
+            <span style="font-weight:600;">(${r.urgenciesCount}/5 Urgencias)</span>
             <div class="status-dot" style="background:${color}"></div>
           </div>
         `;
@@ -653,10 +677,9 @@
       document.getElementById('sideNationName').textContent = r.owner;
       document.getElementById('sideRegionName').textContent = r.name;
       
-      // Renderizar Bandera Real
-      document.getElementById('sideFlagBox').innerHTML = `<img src="${r.flag}" alt="Bandera de ${r.owner}">`;
+      // Cargar SVG nativo de bandera
+      document.getElementById('sideFlagBox').innerHTML = r.flagSvg;
 
-      // Cambiar texto del botón según si es propia o ajena
       const manageBtn = document.getElementById('btnOpenManage');
       manageBtn.textContent = r.isPlayer ? "Gestionar Región" : "Info";
 
@@ -679,7 +702,6 @@
 
     function openCentralManagement() {
       if (selectedIndex === null) return;
-      setTimeSpeed(0);
 
       const r = regions[selectedIndex];
       document.getElementById('modalRegionTitle').textContent = `${r.name}`;
@@ -694,10 +716,8 @@
       if (r.isPlayer) {
         switchTab('fac');
       } else {
-        // Rellenar información de la región extranjera
         document.getElementById('infoRegionDetails').innerHTML = `
           <b>Propietario:</b> ${r.owner}<br>
-          <b>Estado de Urgencia:</b> ${r.status}/6<br>
           <b>Nivel Industrial:</b> ${r.factoryLv} Fábricas<br>
           <b>Infraestructura:</b> Vías Nivel ${r.railLv}
         `;
@@ -710,16 +730,26 @@
 
     function closeCentralManagement() {
       document.getElementById('manageModal').hidden = true;
-      setTimeSpeed(savedSpeedBeforePause);
+      if (timeTimer === null && savedSpeedBeforePause > 0) {
+        setTimeSpeed(savedSpeedBeforePause);
+      }
     }
 
     function switchTab(tab) {
+      // Pausa estricta ÚNICAMENTE al entrar a la pestaña de Urgencias
+      if (tab === 'urgency') {
+        setTimeSpeed(0);
+      } else if (timeTimer === null && savedSpeedBeforePause > 0) {
+        setTimeSpeed(savedSpeedBeforePause);
+      }
+
       ['fac', 'infra', 'logis', 'urgency', 'info', 'diplo'].forEach(t => {
         const content = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
         if (content) content.hidden = t !== tab;
         if (btn) btn.classList.toggle('active', t === tab);
       });
+
       if (tab === 'urgency') loadRandomUrgencyEvent();
     }
 
@@ -870,11 +900,11 @@
       const r = regions[selectedIndex];
       if (type === 'gift') notify(`🎁 Regalo de Estado enviado a ${r.owner}.`);
       if (type === 'demand') notify(`⚠️ Reclamación de tributo enviada a ${r.owner}.`);
-      if (type === 'pact') notify(`📜 Proponer Pacto de No Agresión enviado a ${r.owner}.`);
+      if (type === 'pact') notify(`📜 Propuesta de No Agresión enviada a ${r.owner}.`);
       closeCentralManagement();
     }
 
-    setTimeSpeed(120);
+    setTimeSpeed(30); // Iniciar tiempo normal (30 seg/día) por defecto
     renderView();
   </script>
 </body>
