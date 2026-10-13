@@ -50,7 +50,7 @@
       overflow: hidden; overscroll-behavior: none;
       transition: background-color 0.2s ease, color 0.2s ease;
     }
-    button { font-family: inherit; }
+    button, a { font-family: inherit; }
 
     .app {
       position: relative; height: 100dvh; max-width: 600px; margin: 0 auto;
@@ -94,6 +94,7 @@
       gap: 6px; min-height: 76px; padding: 10px; border: 1px solid var(--line);
       border-radius: var(--radius); background: var(--card); color: var(--ink);
       font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.1s;
+      text-decoration: none;
     }
     .act:active { transform: scale(0.96); background: var(--surface); }
 
@@ -145,21 +146,10 @@
 
     .card { background: var(--card); padding: 16px; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); }
 
-    /* Map styles restored */
-    .map-container { position: relative; flex: 1; background: var(--surface); min-height: 280px; border-radius: var(--radius); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
-    #mapSvg { width: 100%; height: 100%; }
-
     /* Material Grid (HOI4) */
     .material-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
     .mat-badge { background: var(--surface); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--line); font-size: 12px; }
     .mat-badge b { display: block; font-size: 14px; color: var(--ink); margin-top: 2px; }
-
-    /* Region List */
-    .region-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; background: var(--surface); border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--line);
-    }
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--ink); }
 
     /* Toast Notifications */
     .toast-container {
@@ -204,7 +194,7 @@
 
       <nav class="actions" id="actions" hidden>
         <button class="act" type="button" data-open="edit">Edit World</button>
-        <button class="act" type="button" data-open="map">Territories</button>
+        <a class="act" href="territories.html">Territories</a>
         <button class="act" type="button" data-open="manage">War & Economy</button>
       </nav>
     </main>
@@ -226,30 +216,6 @@
       <div class="form">
         <label class="field"><span>World Name</span><input id="fName" type="text" placeholder="e.g. Aethelgard Empire"></label>
         <label class="field"><span>Lore & Description</span><textarea id="fDesc" rows="3" placeholder="e.g. A rising nation preparing its industry..."></textarea></label>
-      </div>
-    </div>
-  </section>
-
-  <!-- Restored Map Sheet -->
-  <section class="sheet" id="sheetMap">
-    <div class="sheet-bar">
-      <button class="back" data-close>‹ Back</button>
-      <h2 class="sheet-title">Territorial Map & Regions</h2>
-      <span></span>
-    </div>
-    <div class="sheet-body" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="map-container">
-        <svg id="mapSvg" viewBox="0 0 600 350">
-          <rect width="600" height="350" fill="var(--surface)"/>
-          <path d="M 80,80 Q 250,30 400,100 T 520,260 Q 300,320 100,250 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
-          <circle cx="260" cy="160" r="10" fill="var(--ink)"/>
-          <text x="260" y="190" font-family="serif" font-size="13" text-anchor="middle" fill="var(--ink)">Capital Core</text>
-        </svg>
-      </div>
-      <div class="card">
-        <b style="font-family:var(--serif); font-size:16px;">Regional Status List</b>
-        <p style="margin:4px 0 10px; font-size:13px; color:var(--muted);">Scale: 1 (Stable Green) to 10 (Critical Red).</p>
-        <div id="regionList"></div>
       </div>
     </div>
   </section>
@@ -300,12 +266,6 @@
       setTimeout(() => { if (toast.isConnected) toast.remove(); }, 1500);
     }
 
-    function getRegionColor(val) {
-      // 1 (Green / Stable) to 10 (Red / Critical) mapped cleanly to monochrome or grayscale tones
-      const intensity = val / 10;
-      return intensity > 0.6 ? '#CC0000' : (intensity > 0.3 ? '#888888' : '#111111');
-    }
-
     function saveWorlds() { localStorage.setItem(STORAGE_KEY, JSON.stringify(saves)); }
 
     $('themeBtn').onclick = () => {
@@ -351,7 +311,6 @@
       $('fDesc').value = w.desc;
       
       updateResourcesUI();
-      renderRegions();
     }
 
     function updateResourcesUI() {
@@ -363,20 +322,6 @@
       $('resRub').textContent = w.resources.rubber.toLocaleString();$('facLevel').textContent = w.factoryLevel;
     }
 
-    function renderRegions() {
-      const w = saves.find(i => i.id === currentId);
-      if(!w) return;
-      const list = $('regionList');
-      list.innerHTML = "";
-      w.regions.forEach(r => {
-        const row = document.createElement('div');
-        row.className = 'region-row';
-        row.innerHTML = `<span><b>${r.name}</b> (Urgency: ${r.status}/10)</span><div class="status-dot" style="background:${getRegionColor(r.status)}"></div>`;
-        list.appendChild(row);
-      });
-    }
-
-    // Fixed infinite upgrades bug with strict resource check and max level cap
     $('btnUpgradeFac').onclick = () => {
       const w = saves.find(i => i.id === currentId);
       if(!w) return;
