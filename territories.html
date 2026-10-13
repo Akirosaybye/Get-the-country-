@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Sovereign - Territorial Map</title>
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #F4F4F4;
+      --card: #FFFFFF;
+      --line: #DCDCDC;
+      --ink: #111111;
+      --muted: #666666;
+      --danger: #CC0000;
+      --serif: "Newsreader", Georgia, serif;
+      --sans: "DM Sans", system-ui, sans-serif;
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root.auto-theme, :root.dark-theme {
+        --bg: #111111;
+        --surface: #1A1A1A;
+        --card: #161616;
+        --line: #2C2C2C;
+        --ink: #F0F0F0;
+        --muted: #999999;
+        --danger: #FF5555;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    html, body {
+      margin: 0; padding: 0; height: 100dvh; width: 100vw;
+      background: var(--bg); color: var(--ink); font-family: var(--sans);
+      overflow: hidden; overscroll-behavior: none;
+    }
+
+    button { font-family: inherit; }
+
+    .app {
+      position: relative; height: 100dvh; width: 100vw;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* Header */
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--line);
+      background: var(--bg); z-index: 10;
+    }
+    .brand { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+    .back-btn {
+      padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+      background: var(--surface); color: var(--ink); cursor: pointer;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+    }
+
+    /* Map Stage */
+    .map-stage {
+      flex: 1; position: relative; background: var(--surface);
+      display: grid; place-items: center; padding: 20px; overflow: hidden;
+    }
+
+    .map-grid {
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+      gap: 6px; width: min(90vw, 420px); height: min(90vw, 420px);
+      background: var(--line); padding: 6px; border-radius: var(--radius);
+      border: 2px solid var(--ink); box-shadow: var(--shadow);
+    }
+
+    .region-tile {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 8px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; transition: background 0.15s, transform 0.15s;
+      position: relative; padding: 10px;
+    }
+    .region-tile:hover, .region-tile:active { background: var(--surface); transform: scale(0.98); }
+    .region-tile.selected { border: 2px solid var(--ink); background: var(--surface); }
+
+    .tile-dot {
+      width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--ink);
+      position: absolute; top: 10px; right: 10px;
+    }
+
+    .tile-name { font-family: var(--serif); font-weight: 600; font-size: 15px; text-anchor: middle; }
+    .tile-owner { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+
+    /* Left Sidebar Panel (Nation Info & Flag) */
+    .side-panel {
+      position: absolute; left: 16px; top: 80px; width: 220px;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 10px; z-index: 20;
+      animation: slideLeft 0.2s ease-out;
+    }
+
+    .flag-box {
+      width: 100%; height: 60px; border: 1px solid var(--ink);
+      background: repeating-linear-gradient(45deg, var(--ink), var(--ink) 10px, var(--bg) 10px, var(--bg) 20px);
+      border-radius: 6px; display: grid; place-items: center;
+    }
+    .flag-label { background: var(--bg); padding: 2px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid var
