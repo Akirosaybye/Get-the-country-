@@ -1,41 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark-theme">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sovereign - Mapa Territorial Interactivo</title>
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#111111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #FFFFFF;
-      --surface: #F4F4F4;
-      --card: #FFFFFF;
-      --line: #DCDCDC;
-      --ink: #111111;
-      --muted: #666666;
-      --danger: #CC0000;
-      --success: #008800;
+      --bg: #0F171E;
+      --surface: #16202B;
+      --card: #1C2834;
+      --line: #2E3D4D;
+      --ink: #E6EDF3;
+      --muted: #8B949E;
+      --danger: #F85149;
+      --success: #3FB950;
+      --water: #0D1B2A;
+      --territory: #1B3A2B;
+      --territory-hover: #224A37;
       --serif: "Newsreader", Georgia, serif;
       --sans: "DM Sans", system-ui, sans-serif;
       --radius: 12px;
-      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root.auto-theme, :root.dark-theme {
-        --bg: #111111;
-        --surface: #1A1A1A;
-        --card: #161616;
-        --line: #2C2C2C;
-        --ink: #F0F0F0;
-        --muted: #999999;
-        --danger: #FF5555;
-        --success: #55FF55;
-      }
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -58,9 +48,9 @@
     .top {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 20px; border-bottom: 1px solid var(--line);
-      background: var(--bg); z-index: 10;
+      background: var(--card); z-index: 10;
     }
-    .brand { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+    .brand { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--ink); }
     .back-btn {
       padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
       background: var(--surface); color: var(--ink); cursor: pointer;
@@ -94,9 +84,9 @@
       color: var(--muted); cursor: pointer; text-decoration: underline; margin-top: 2px;
     }
 
-    /* Interactive Map Canvas Container */
+    /* Interactive Map Canvas Container (Water background) */
     .map-stage {
-      flex: 1; position: relative; background: var(--surface);
+      flex: 1; position: relative; background: var(--water);
       overflow: hidden; cursor: grab; user-select: none;
       display: grid; place-items: center;
     }
@@ -104,23 +94,24 @@
 
     /* Ensanchado del Mapa */
     .square-map-wrapper {
-      width: min(90vw, 80vh); height: min(75vw, 65vh);
-      border: 2px solid var(--ink); background: var(--card);
-      box-shadow: var(--shadow); position: relative;
+      width: min(92vw, 82vh); height: min(78vw, 68vh);
+      border: 2px solid var(--line); background: var(--water);
+      box-shadow: var(--shadow); position: relative; border-radius: 8px; overflow: hidden;
     }
 
     #mapSvg { width: 100%; height: 100%; display: block; }
 
     .region-shape {
-      fill: var(--card); stroke: var(--ink); stroke-width: 2;
+      fill: var(--territory); stroke: var(--line); stroke-width: 2;
       transition: fill 0.2s, stroke-width 0.2s; cursor: pointer;
     }
-    .region-shape:hover { fill: var(--surface); stroke-width: 3; }
-    .region-shape.selected { fill: var(--surface); stroke: var(--ink); stroke-width: 4; }
+    .region-shape:hover { fill: var(--territory-hover); stroke-width: 3; stroke: var(--ink); }
+    .region-shape.selected { fill: var(--territory-hover); stroke: var(--ink); stroke-width: 4; }
 
     .map-label {
       font-family: var(--serif); font-size: 13px; font-weight: 600;
-      fill: var(--ink); pointer-events: none; text-anchor: middle;
+      fill: #FFFFFF; pointer-events: none; text-anchor: middle;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
 
     .map-controls-hint {
@@ -130,7 +121,7 @@
       box-shadow: var(--shadow); pointer-events: none;
     }
 
-    /* Floating Time Controls Bar (Abajo a la derecha) */
+    /* Floating Time Controls Bar */
     .time-control-hud {
       position: absolute; bottom: 16px; right: 16px; z-index: 25;
       background: var(--card); border: 1px solid var(--line); border-radius: 999px;
@@ -147,7 +138,7 @@
     .bottom-drawer {
       background: var(--card); border-top: 1px solid var(--line);
       max-height: 180px; display: flex; flex-direction: column;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.05); z-index: 10;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.3); z-index: 10;
     }
     .drawer-header {
       padding: 8px 16px; display: flex; justify-content: space-between;
@@ -164,7 +155,7 @@
     }
     .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel */
+    /* Left Sidebar Panel con Bandera Real */
     .side-panel {
       position: absolute; left: 12px; top: 190px; width: 230px;
       background: var(--card); border: 1px solid var(--line);
@@ -175,11 +166,11 @@
     .side-close-btn { background: none; border: 0; font-size: 18px; font-weight: bold; cursor: pointer; color: var(--ink); padding: 0 4px; }
 
     .flag-box {
-      width: 100%; height: 38px; border: 1px solid var(--ink);
-      background: repeating-linear-gradient(45deg, var(--ink), var(--ink) 8px, var(--bg) 8px, var(--bg) 16px);
-      border-radius: 6px; display: grid; place-items: center;
+      width: 100%; height: 50px; border: 1px solid var(--line);
+      background: var(--surface); border-radius: 6px; overflow: hidden;
+      display: grid; place-items: center;
     }
-    .flag-label { background: var(--bg); padding: 2px 6px; font-size: 9px; font-weight: 700; border: 1px solid var(--ink); }
+    .flag-box img { width: 100%; height: 100%; object-fit: cover; }
 
     .info-group { display: flex; flex-direction: column; gap: 1px; }
     .info-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
@@ -187,13 +178,14 @@
 
     .manage-btn {
       margin-top: 4px; width: 100%; height: 34px; border-radius: 999px;
-      border: 1px solid var(--ink); background: var(--ink); color: var(--bg);
+      border: 1px solid var(--line); background: var(--ink); color: var(--bg);
       font-weight: 600; font-size: 12px; cursor: pointer;
     }
+    .manage-btn:hover { opacity: 0.9; }
 
     /* Modals */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       display: grid; place-items: center; z-index: 30; padding: 16px;
     }
     .center-modal {
@@ -223,22 +215,23 @@
     .upgrade-card p { margin: 0; font-size: 11px; color: var(--muted); }
 
     .btn-action {
-      height: 34px; border-radius: 6px; border: 1px solid var(--ink);
+      height: 34px; border-radius: 6px; border: 1px solid var(--line);
       background: var(--ink); color: var(--bg); font-weight: 600; font-size: 12px; cursor: pointer;
     }
 
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
 
-    /* Notification Stack - Above Time Controls */
+    /* Notification Stack */
     .notification-stack {
       position: fixed; bottom: 60px; right: 16px; z-index: 100;
       display: flex; flex-direction: column; gap: 8px; max-width: 320px; pointer-events: none;
     }
     .custom-toast {
-      pointer-events: auto; background: var(--ink); color: var(--bg);
+      pointer-events: auto; background: var(--card); color: var(--ink);
+      border: 1px solid var(--line);
       padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 500;
       display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25); line-height: 1.4;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); line-height: 1.4;
     }
     .toast-close { background: none; border: 0; color: inherit; font-size: 16px; cursor: pointer; padding: 0 4px; }
 
@@ -250,7 +243,7 @@
     }
   </style>
 </head>
-<body class="auto-theme">
+<body class="dark-theme">
 
   <div class="notification-stack" id="toastStack"></div>
 
@@ -261,7 +254,7 @@
     </header>
 
     <main class="map-stage" id="mapStage">
-      <!-- HUD de Recursos y Fecha -->
+      <!-- HUD de Recursos -->
       <div class="resource-hud" id="resourceHud">
         <div class="hud-title">
           <span id="hudScopeTitle">Recursos del País</span>
@@ -273,10 +266,10 @@
           <div class="res-item"><span>🛢️ Petróleo:</span> <b id="resValOil">500</b></div>
           <div class="res-item"><span>🪵 Madera:</span> <b id="resValWood">2,500</b></div>
         </div>
-        <div class="hud-secondary-toggle" onclick="toggleSecondaryHUD()">[+] Secundarios (🚂 Trenes / 🪖 Armas)</div>
+        <div class="hud-secondary-toggle" onclick="toggleSecondaryHUD()">[+] Secundarios</div>
         <div class="hud-grid" id="hudSecondaryGrid" hidden style="margin-top:4px; border-top:1px dashed var(--line); padding-top:4px;">
-          <div class="res-item"><span>🚂 Trenes:</span> <b id="resValTrains">4</b></div>
-          <div class="res-item"><span>🪖 Armas:</span> <b id="resValArms">250</b></div>
+          <div class="res-item"><span>Trenes:</span> <b id="resValTrains">4</b></div>
+          <div class="res-item"><span>Armas:</span> <b id="resValArms">250</b></div>
         </div>
       </div>
 
@@ -290,7 +283,7 @@
         <button class="time-btn" id="btnFast" onclick="setTimeSpeed(30)" title="Rápido (30 seg/día)">⏩</button>
       </div>
 
-      <!-- Cuadrado Perfecto del Mapa -->
+      <!-- Mapa Cuadrado Estilo Realista -->
       <div class="square-map-wrapper" id="mapWrapper">
         <svg id="mapSvg" viewBox="0 0 500 500">
           <g id="mapGroup">
@@ -313,10 +306,10 @@
         </svg>
       </div>
 
-      <!-- Panel Lateral Izquierdo -->
+      <!-- Panel Lateral Izquierdo con Bandera Real -->
       <div class="side-panel" id="sidePanel" hidden>
         <div class="side-panel-header">
-          <div class="flag-box" style="flex:1;"><span class="flag-label" id="flagLabel">ESTADO</span></div>
+          <div class="flag-box" id="sideFlagBox"></div>
           <button class="side-close-btn" onclick="closeSidePanel()">×</button>
         </div>
         <div class="info-group">
@@ -340,10 +333,10 @@
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <div class="version-badge">Ver: v1.0.9-beta</div>
+    <div class="version-badge">Ver: v1.1.0-beta</div>
   </div>
 
-  <!-- Modal Central de Gestión -->
+  <!-- Modal Central de Gestión / Info -->
   <div class="modal-overlay" id="manageModal" hidden>
     <div class="center-modal">
       <div class="modal-header">
@@ -354,9 +347,10 @@
       <div class="tabs" id="modalTabsContainer">
         <button class="tab-btn active" id="tabFacBtn" onclick="switchTab('fac')">Fábricas</button>
         <button class="tab-btn" id="tabInfraBtn" onclick="switchTab('infra')">Infraestructura</button>
-        <button class="tab-btn" id="tabLogisBtn" onclick="switchTab('logis')">🚂 Logística</button>
-        <button class="tab-btn" id="tabUrgencyBtn" onclick="switchTab('urgency')" style="border-color:var(--danger); color:var(--danger);">⚠️ Urgencias</button>
-        <button class="tab-btn" id="tabDiploBtn" onclick="switchTab('diplo')" hidden>🌐 Diplomacia</button>
+        <button class="tab-btn" id="tabLogisBtn" onclick="switchTab('logis')">Logística</button>
+        <button class="tab-btn" id="tabUrgencyBtn" onclick="switchTab('urgency')" style="border-color:var(--danger); color:var(--danger);">Urgencias</button>
+        <button class="tab-btn" id="tabInfoBtn" onclick="switchTab('info')" hidden>Información</button>
+        <button class="tab-btn" id="tabDiploBtn" onclick="switchTab('diplo')" hidden>Diplomacia</button>
       </div>
 
       <!-- Pestaña 1: Fábricas -->
@@ -375,7 +369,7 @@
           <b>Red de Vías de Tren</b>
           <p>Nivel de Vías: <span id="railLvText">0</span> / 5</p>
           <p>Costo: 300 🪙 Oro, 80 ⚙️ Acero</p>
-          <button class="btn-action" onclick="upgradeInfra('rail')">Construir Vías (+1 🚂 Tren)</button>
+          <button class="btn-action" onclick="upgradeInfra('rail')">Construir Vías (+1 Tren)</button>
         </div>
         <div class="upgrade-card">
           <b>Viviendas de Población</b>
@@ -394,15 +388,15 @@
       <!-- Pestaña 3: Trenes y Logística -->
       <div class="tab-content" id="tabLogis" hidden>
         <div class="upgrade-card">
-          <b>Mover Recursos por Tren 🚂</b>
+          <b>Mover Recursos por Tren</b>
           <p id="trainReqText">Requiere Vías Nivel 1+</p>
           <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-            <select id="transferResource" style="padding:6px; border-radius:6px; border:1px solid var(--line);">
+            <select id="transferResource" style="padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink);">
               <option value="steel">⚙️ Acero (50 Unidades)</option>
               <option value="oil">🛢️ Petróleo (20 Unidades)</option>
               <option value="wood">🪵 Madera (100 Unidades)</option>
             </select>
-            <select id="transferTarget" style="padding:6px; border-radius:6px; border:1px solid var(--line);"></select>
+            <select id="transferTarget" style="padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink);"></select>
             <button class="btn-action" id="btnSendTrain" onclick="sendResourceTrain()">Despachar Tren (Llegada en 6s)</button>
           </div>
         </div>
@@ -411,13 +405,21 @@
       <!-- Pestaña 4: Urgencias -->
       <div class="tab-content" id="tabUrgency" hidden>
         <div class="upgrade-card" style="border-color:var(--danger);">
-          <b>⚠️ Urgencia Regional Activa</b>
+          <b>Urgencia Regional Activa</b>
           <p id="urgencyDescText">Hay un dilema crítico en esta región.</p>
           <div id="urgencyChoicesBox" style="display:flex; flex-direction:column; gap:6px; margin-top:6px;"></div>
         </div>
       </div>
 
-      <!-- Pestaña 5: Diplomacia -->
+      <!-- Pestaña 5: Información (Regiones Extranjeras) -->
+      <div class="tab-content" id="tabInfo" hidden>
+        <div class="upgrade-card">
+          <b>Información de Soberanía Extranjera</b>
+          <p id="infoRegionDetails">Detalles de la región bajo control soberano ajeno.</p>
+        </div>
+      </div>
+
+      <!-- Pestaña 6: Diplomacia -->
       <div class="tab-content" id="tabDiplo" hidden>
         <div class="upgrade-card">
           <b>Acciones Diplomáticas Extranjeras</b>
@@ -436,9 +438,12 @@
     const STORAGE_KEY = "sovereign_worlds_v5";
     let saves = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     let activeWorld = saves.length > 0 ? saves[0] : null;
-    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Jugador";
+    const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Prusiano";
 
-    // Eventos de dilemas
+    // URLs de Banderas Reales
+    const FLAG_PRUSSIA = "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Prussia_%281892-1918%29.svg";
+    const FLAG_SPAIN_REP = "https://upload.wikimedia.org/wikipedia/commons/d/dd/Flag_of_the_Second_Spanish_Republic.svg";
+
     const eventPool = [
       { text: "Huelga de obreros ferroviarios exigiendo mejores pagas.", opt1: "Conceder subsidio", opt2: "Forzar trabajo obligado", effText1: "-300 🪙 Oro, Urgencia reducida", effText2: "+50 ⚙️ Acero, -100 🪙 Oro, Urgencia reducida", eff1: { gold: -300 }, eff2: { gold: -100, steel: 50 } },
       { text: "Inundación en almacenes de madera y suministros.", opt1: "Drenar con fondos públicos", opt2: "Dejar que la población resuelva", effText1: "-150 🪙 Oro, +20 🪵 Madera recuperada", effText2: "-50 🪵 Madera perdida", eff1: { gold: -150, wood: 20 }, eff2: { wood: -50 } },
@@ -446,21 +451,19 @@
       { text: "Se descubre contrabando de acero en las fronteras.", opt1: "Confiscar cargamentos", opt2: "Cobrar impuesto de silencio", effText1: "+100 ⚙️ Acero, Urgencia resuelta", effText2: "+400 🪙 Oro", eff1: { steel: 100 }, eff2: { gold: 400 } }
     ];
 
-    // Datos iniciales de regiones con valores netos por día
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
-      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
+      { id: 2, name: "Western Coast", owner: "República Española", isPlayer: false, flag: FLAG_SPAIN_REP, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, flag: FLAG_PRUSSIA, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
     ];
 
     let selectedIndex = null;
     let drawerMinimized = false;
     const activeToasts = [];
 
-    // Sistema de Tiempo en Tiempo Real
     let gameDay = 1, gameYear = 1936;
-    let secondsPerDay = 120; // 2 minutos por defecto
+    let secondsPerDay = 120;
     let timeTimer = null;
     let savedSpeedBeforePause = 120;
 
@@ -487,7 +490,6 @@
       if (gameDay > 365) { gameDay = 1; gameYear++; }
       document.getElementById('gameDateText').textContent = `Día ${gameDay}, ${gameYear}`;
 
-      // Sumar/Restar producción diaria neta a cada región de forma realista
       regions.forEach(r => {
         if (r.isPlayer) {
           r.res.gold += r.netRaw.gold;
@@ -501,7 +503,6 @@
       updateHUD();
     }
 
-    // Notificaciones emergentes
     function notify(msg) {
       const stack = document.getElementById('toastStack');
       const toast = document.createElement('div');
@@ -532,11 +533,10 @@
     }
 
     function get6ToneColor(val) {
-      const colors = ['#00AA00', '#77CC00', '#DDCC00', '#FF8800', '#FF4400', '#CC0000'];
+      const colors = ['#2EA043', '#56D364', '#E3B341', '#F0883E', '#F85149', '#DA3633'];
       return colors[Math.min(Math.max(val - 1, 0), 5)];
     }
 
-    // Arrastre y Zoom
     let panX = 0, panY = 0, scale = 1;
     let isDragging = false, startX = 0, startY = 0;
     const mapGroup = document.getElementById('mapGroup');
@@ -633,7 +633,7 @@
         row.innerHTML = `
           <span><b>${r.name}</b> (${r.owner})</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-weight:600;">Nivel Urgencia: ${r.status}/6 (${r.urgenciesCount}/5 Urgencias)</span>
+            <span style="font-weight:600;">Urgencia: ${r.status}/6 (${r.urgenciesCount}/5)</span>
             <div class="status-dot" style="background:${color}"></div>
           </div>
         `;
@@ -652,7 +652,13 @@
 
       document.getElementById('sideNationName').textContent = r.owner;
       document.getElementById('sideRegionName').textContent = r.name;
-      document.getElementById('flagLabel').textContent = r.owner.substring(0, 8);
+      
+      // Renderizar Bandera Real
+      document.getElementById('sideFlagBox').innerHTML = `<img src="${r.flag}" alt="Bandera de ${r.owner}">`;
+
+      // Cambiar texto del botón según si es propia o ajena
+      const manageBtn = document.getElementById('btnOpenManage');
+      manageBtn.textContent = r.isPlayer ? "Gestionar Región" : "Info";
 
       document.getElementById('sidePanel').hidden = false;
       updateHUD();
@@ -673,7 +679,7 @@
 
     function openCentralManagement() {
       if (selectedIndex === null) return;
-      setTimeSpeed(0); // Pausa automática al abrir gestión
+      setTimeSpeed(0);
 
       const r = regions[selectedIndex];
       document.getElementById('modalRegionTitle').textContent = `${r.name}`;
@@ -682,10 +688,21 @@
       document.getElementById('tabInfraBtn').hidden = !r.isPlayer;
       document.getElementById('tabLogisBtn').hidden = !r.isPlayer;
       document.getElementById('tabUrgencyBtn').hidden = !r.isPlayer;
+      document.getElementById('tabInfoBtn').hidden = r.isPlayer;
       document.getElementById('tabDiploBtn').hidden = r.isPlayer;
 
-      if (r.isPlayer) switchTab('fac');
-      else switchTab('diplo');
+      if (r.isPlayer) {
+        switchTab('fac');
+      } else {
+        // Rellenar información de la región extranjera
+        document.getElementById('infoRegionDetails').innerHTML = `
+          <b>Propietario:</b> ${r.owner}<br>
+          <b>Estado de Urgencia:</b> ${r.status}/6<br>
+          <b>Nivel Industrial:</b> ${r.factoryLv} Fábricas<br>
+          <b>Infraestructura:</b> Vías Nivel ${r.railLv}
+        `;
+        switchTab('info');
+      }
 
       updateModalUI();
       document.getElementById('manageModal').hidden = false;
@@ -693,11 +710,11 @@
 
     function closeCentralManagement() {
       document.getElementById('manageModal').hidden = true;
-      setTimeSpeed(savedSpeedBeforePause); // Reanudar tiempo
+      setTimeSpeed(savedSpeedBeforePause);
     }
 
     function switchTab(tab) {
-      ['fac', 'infra', 'logis', 'urgency', 'diplo'].forEach(t => {
+      ['fac', 'infra', 'logis', 'urgency', 'info', 'diplo'].forEach(t => {
         const content = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
         if (content) content.hidden = t !== tab;
@@ -778,10 +795,9 @@
 
       const canTrain = r.railLv > 0 && r.res.trains > 0;
       document.getElementById('btnSendTrain').disabled = !canTrain;
-      document.getElementById('trainReqText').textContent = canTrain ? `Vías Nivel ${r.railLv} y ${r.res.trains} 🚂 tren(es) disponibles` : 'Requiere Vías Nivel 1+ y al menos 1 🚂 tren';
+      document.getElementById('trainReqText').textContent = canTrain ? `Vías Nivel ${r.railLv} y ${r.res.trains} tren(es) disponibles` : 'Requiere Vías Nivel 1+ y al menos 1 tren disponible';
     }
 
-    // Corrección exacta de construcción con validación estricta de la región seleccionada
     function upgradeFactory() {
       const r = regions[selectedIndex];
       if (r.factoryLv >= 10) return notify("❌ Error: Nivel máximo de fábricas alcanzado.");
@@ -789,7 +805,6 @@
       let costGold = 500, costSteel = 100, costOil = 0;
       if (r.factoryLv >= 5) { costGold = 1200; costSteel = 300; costOil = 100; }
 
-      // Validación comprobada directamente sobre el inventario real de la región
       if (r.res.gold >= costGold && r.res.steel >= costSteel && (r.factoryLv < 5 || r.res.oil >= costOil)) {
         r.res.gold -= costGold;
         r.res.steel -= costSteel;
@@ -810,7 +825,7 @@
         if (r.res.gold >= 300 && r.res.steel >= 80) {
           r.res.gold -= 300; r.res.steel -= 80;
           r.railLv = Math.min(5, r.railLv + 1); r.res.trains += 1;
-          notify("✅ Vías de tren ampliadas y +1 🚂 Tren sumado.");
+          notify("✅ Vías de tren ampliadas y +1 Tren sumado.");
         } else notify("❌ Error: Necesitas 300 🪙 Oro y 80 ⚙️ Acero.");
       }
       if (type === 'house') {
@@ -833,7 +848,7 @@
 
     function sendResourceTrain() {
       const r = regions[selectedIndex];
-      if (r.railLv <= 0 || r.res.trains <= 0) return notify("❌ Error: Requiere vías y al menos 1 🚂 tren libre.");
+      if (r.railLv <= 0 || r.res.trains <= 0) return notify("❌ Error: Requiere vías y al menos 1 tren libre.");
       const targetId = document.getElementById('transferTarget').value;
       const resource = document.getElementById('transferResource').value;
       const targetRegion = regions.find(item => item.id == targetId);
@@ -855,11 +870,11 @@
       const r = regions[selectedIndex];
       if (type === 'gift') notify(`🎁 Regalo de Estado enviado a ${r.owner}.`);
       if (type === 'demand') notify(`⚠️ Reclamación de tributo enviada a ${r.owner}.`);
-      if (type === 'pact') notify(`📜 Propuesta de No Agresión enviada a ${r.owner}.`);
+      if (type === 'pact') notify(`📜 Proponer Pacto de No Agresión enviado a ${r.owner}.`);
       closeCentralManagement();
     }
 
-    setTimeSpeed(120); // Iniciar tiempo normal por defecto
+    setTimeSpeed(120);
     renderView();
   </script>
 </body>
