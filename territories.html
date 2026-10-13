@@ -67,7 +67,7 @@
       font-size: 13px; font-weight: 600; text-decoration: none;
     }
 
-    /* Floating Resource HUD (Top Left Overlay) */
+    /* Floating Resource HUD */
     .resource-hud {
       position: absolute; top: 12px; left: 12px; z-index: 20;
       background: var(--card); border: 1px solid var(--line);
@@ -91,7 +91,7 @@
       color: var(--muted); cursor: pointer; text-decoration: underline; margin-top: 2px;
     }
 
-    /* Interactive Map Canvas Container */
+    /* Interactive Map Canvas Container - Wider Layout */
     .map-stage {
       flex: 1; position: relative; background: var(--surface);
       overflow: hidden; cursor: grab; user-select: none;
@@ -99,9 +99,9 @@
     }
     .map-stage:active { cursor: grabbing; }
 
-    /* Perfect Square Map Wrapper */
+    /* Ensanchado del Mapa */
     .square-map-wrapper {
-      width: min(75vw, 75vh); height: min(75vw, 75vh);
+      width: min(90vw, 80vh); height: min(75vw, 65vh);
       border: 2px solid var(--ink); background: var(--card);
       box-shadow: var(--shadow); position: relative;
     }
@@ -148,12 +148,19 @@
     }
     .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel */
+    /* Left Sidebar Panel with Close Button */
     .side-panel {
       position: absolute; left: 12px; top: 190px; width: 230px;
       background: var(--card); border: 1px solid var(--line);
       border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
       display: flex; flex-direction: column; gap: 8px; z-index: 20;
+    }
+    .side-panel-header {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .side-close-btn {
+      background: none; border: 0; font-size: 18px; font-weight: bold;
+      cursor: pointer; color: var(--ink); padding: 0 4px;
     }
 
     .flag-box {
@@ -173,7 +180,7 @@
       font-weight: 600; font-size: 12px; cursor: pointer;
     }
 
-    /* Central Management & Event Modals */
+    /* Modals */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
       display: grid; place-items: center; z-index: 30; padding: 16px;
@@ -191,7 +198,7 @@
     .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
     .tab-btn {
       flex: 1; padding: 6px; border-radius: 6px; border: 1px solid var(--line);
-      background: var(--surface); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink);
+      background: var(--surface); font-size: 11px; font-weight: 600; cursor: pointer; color: var(--ink);
     }
     .tab-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
@@ -211,19 +218,18 @@
 
     .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
 
-    /* In-App Notification Stack (Bottom Right) */
+    /* Outcome Notification Stack - Max 2 visible, 5s duration */
     .notification-stack {
       position: fixed; bottom: 16px; right: 16px; z-index: 100;
-      display: flex; flex-direction: column; gap: 6px; max-width: 280px; pointer-events: none;
+      display: flex; flex-direction: column; gap: 8px; max-width: 320px; pointer-events: none;
     }
     .custom-toast {
       pointer-events: auto; background: var(--ink); color: var(--bg);
-      padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 500;
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s;
+      padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 500;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25); line-height: 1.4;
     }
-    .toast-close { background: none; border: 0; color: inherit; font-size: 14px; cursor: pointer; padding: 0 4px; }
-    .toast-fade { opacity: 0.3; }
+    .toast-close { background: none; border: 0; color: inherit; font-size: 16px; cursor: pointer; padding: 0 4px; }
 
     .version-badge {
       position: fixed; bottom: 8px; left: 8px; z-index: 50;
@@ -244,7 +250,7 @@
     </header>
 
     <main class="map-stage" id="mapStage">
-      <!-- HUD de Recursos con Iconos (Arriba Izquierda) -->
+      <!-- HUD de Recursos -->
       <div class="resource-hud" id="resourceHud">
         <div class="hud-title" id="hudScopeTitle">Recursos del País (Total)</div>
         <div class="hud-grid" id="hudMainGrid">
@@ -262,7 +268,7 @@
 
       <div class="map-controls-hint">Arrastrar: Clic + Arrastrar | Zoom: Rueda / Z / WASD</div>
 
-      <!-- Cuadrado Perfecto Contenedor del Mapa -->
+      <!-- Cuadrado Perfecto del Mapa -->
       <div class="square-map-wrapper" id="mapWrapper">
         <svg id="mapSvg" viewBox="0 0 500 500">
           <g id="mapGroup">
@@ -285,9 +291,12 @@
         </svg>
       </div>
 
-      <!-- Panel Lateral Izquierdo -->
+      <!-- Panel Lateral Izquierdo con botón "X" -->
       <div class="side-panel" id="sidePanel" hidden>
-        <div class="flag-box"><span class="flag-label" id="flagLabel">ESTADO</span></div>
+        <div class="side-panel-header">
+          <div class="flag-box" style="flex:1;"><span class="flag-label" id="flagLabel">ESTADO</span></div>
+          <button class="side-close-btn" onclick="closeSidePanel()">×</button>
+        </div>
         <div class="info-group">
           <span class="info-label">Nación</span>
           <span class="info-value" id="sideNationName">-</span>
@@ -309,10 +318,10 @@
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <div class="version-badge">Ver: v1.0.7-beta</div>
+    <div class="version-badge">Ver: v1.0.8-beta</div>
   </div>
 
-  <!-- Modal Central de Gestión y Urgencias -->
+  <!-- Modal Central de Gestión / Diplomacia -->
   <div class="modal-overlay" id="manageModal" hidden>
     <div class="center-modal">
       <div class="modal-header">
@@ -320,11 +329,12 @@
         <button class="close-btn" onclick="closeCentralManagement()">×</button>
       </div>
 
-      <div class="tabs">
+      <div class="tabs" id="modalTabsContainer">
         <button class="tab-btn active" id="tabFacBtn" onclick="switchTab('fac')">Fábricas</button>
         <button class="tab-btn" id="tabInfraBtn" onclick="switchTab('infra')">Infraestructura</button>
-        <button class="tab-btn" id="tabLogisBtn" onclick="switchTab('logis')">🚂 Trenes & Logística</button>
+        <button class="tab-btn" id="tabLogisBtn" onclick="switchTab('logis')">🚂 Logística</button>
         <button class="tab-btn" id="tabUrgencyBtn" onclick="switchTab('urgency')" style="border-color:var(--danger); color:var(--danger);">⚠️ Urgencias</button>
+        <button class="tab-btn" id="tabDiploBtn" onclick="switchTab('diplo')" hidden>🌐 Diplomacia</button>
       </div>
 
       <!-- Pestaña 1: Fábricas -->
@@ -332,7 +342,7 @@
         <div class="upgrade-card">
           <b>Complejo Industrial</b>
           <p>Nivel Actual: <span id="facLvText">1</span> / 10</p>
-          <p id="facCostReq">Costo: 500 Oro, 100 Acero</p>
+          <p id="facCostReq">Costo: 500 🪙 Oro, 100 ⚙️ Acero</p>
           <button class="btn-action" onclick="upgradeFactory()">Construir / Mejorar Fábrica</button>
         </div>
       </div>
@@ -342,24 +352,24 @@
         <div class="upgrade-card">
           <b>Red de Vías de Tren</b>
           <p>Nivel de Vías: <span id="railLvText">0</span> / 5</p>
-          <p>Costo: 300 Oro, 80 Acero</p>
+          <p>Costo: 300 🪙 Oro, 80 ⚙️ Acero</p>
           <button class="btn-action" onclick="upgradeInfra('rail')">Construir Vías (+1 🚂 Tren)</button>
         </div>
         <div class="upgrade-card">
           <b>Viviendas de Población</b>
           <p>Nivel de Casas: <span id="houseLvText">1</span> / 5</p>
-          <p>Costo: 200 Oro, 150 Madera</p>
+          <p>Costo: 200 🪙 Oro, 150 🪵 Madera</p>
           <button class="btn-action" onclick="upgradeInfra('house')">Expandir Viviendas</button>
         </div>
         <div class="upgrade-card">
           <b>Edificios Públicos / Gobernanza</b>
           <p>Nivel de Edificios: <span id="pubLvText">1</span> / 5</p>
-          <p>Costo: 400 Oro</p>
+          <p>Costo: 400 🪙 Oro</p>
           <button class="btn-action" onclick="upgradeInfra('public')">Construir Edificio Público</button>
         </div>
       </div>
 
-      <!-- Pestaña 3: Trenes y Logística con tiempo real -->
+      <!-- Pestaña 3: Trenes y Logística -->
       <div class="tab-content" id="tabLogis" hidden>
         <div class="upgrade-card">
           <b>Mover Recursos por Tren 🚂</b>
@@ -371,17 +381,30 @@
               <option value="wood">🪵 Madera (100 Unidades)</option>
             </select>
             <select id="transferTarget" style="padding:6px; border-radius:6px; border:1px solid var(--line);"></select>
-            <button class="btn-action" id="btnSendTrain" onclick="sendResourceTrain()">Despachar Tren (Tardará 6s)</button>
+            <button class="btn-action" id="btnSendTrain" onclick="sendResourceTrain()">Despachar Tren (Llegada en 6s)</button>
           </div>
         </div>
       </div>
 
-      <!-- Pestaña 4: Urgencias y Decisiones Aleatorias (No repetibles) -->
+      <!-- Pestaña 4: Urgencias (Solo visión para la propia nación) -->
       <div class="tab-content" id="tabUrgency" hidden>
         <div class="upgrade-card" style="border-color:var(--danger);">
           <b>⚠️ Urgencia Regional Activa</b>
-          <p id="urgencyDescText">Hay disturbios civiles en la periferia por falta de suministros básicos.</p>
+          <p id="urgencyDescText">Hay un dilema crítico en esta región.</p>
           <div id="urgencyChoicesBox" style="display:flex; flex-direction:column; gap:6px; margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <!-- Pestaña 5: Diplomacia Extranjera -->
+      <div class="tab-content" id="tabDiplo" hidden>
+        <div class="upgrade-card">
+          <b>Acciones Diplomáticas Extranjeras</b>
+          <p>Interactúa políticamente con esta nación soberana.</p>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+            <button class="btn-action" onclick="sendDiplomacy('gift')">🎁 Enviar Regalo de Estado (500 🪙 Oro)</button>
+            <button class="btn-action" onclick="sendDiplomacy('demand')">⚠️ Reclamar Tributo Territorial</button>
+            <button class="btn-action" onclick="sendDiplomacy('pact')">📜 Proponer Pacto de No Agresión</button>
+          </div>
         </div>
       </div>
     </div>
@@ -393,27 +416,27 @@
     let activeWorld = saves.length > 0 ? saves[0] : null;
     const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Jugador";
 
-    // Banco de 500+ escenarios estratégicos aleatorios (no repetibles por partida)
+    // Pool de Escenarios para Decisiones
     const eventPool = [
-      { text: "Huelga de mineros de carbón exigiendo mejores raciones.", opt1: "Conceder aumento (-300 🪙 Oro, +Estabilidad)", opt2: "Reprimir con milicia (-20 🪖 Población, +50 ⚙️ Acero)", eff1: { gold: -300, pop: 10 }, eff2: { pop: -20, steel: 50 } },
-      { text: "Fuga de petróleo detectada en los oleoductos secundarios.", opt1: "Reparar de inmediato (-150 🪙 Oro, +20 🛢️ Petróleo)", opt2: "Ignorar temporalmente (-40 🛢️ Petróleo, -Estabilidad)", eff1: { gold: -150, oil: 20 }, eff2: { oil: -40, pop: -5 } },
-      { text: "Descubrimiento de un depósito clandestino de madera de alta calidad.", opt1: "Confiscar para el estado (+150 🪵 Madera)", opt2: "Vender en el mercado negro (+250 🪙 Oro)", eff1: { wood: 150 }, eff2: { gold: 250 } },
-      { text: "Brote gripal afectando a los obreros de las fábricas.", opt1: "Enviar suministros médicos (-200 🪙 Oro, +Estabilidad)", opt2: "Mantener turnos obligatorios (-30 ⚙️ Producción, +50 🪙 Oro)", eff1: { gold: -200, pop: 15 }, eff2: { gold: 50, pop: -15 } },
-      { text: "Inversionistas extranjeros ofrecen capital a cambio de recursos.", opt1: "Aceptar trato (+500 🪙 Oro, -100 ⚙️ Acero)", opt2: "Rechazar soberanamente (+Estabilidad)", eff1: { gold: 500, steel: -100 }, eff2: { pop: 10 } }
+      { text: "Huelga de obreros ferroviarios exigiendo mejores pagas.", opt1: "Conceder subsidio", opt2: "Forzar trabajo obligado", effText1: "-300 🪙 Oro, Urgencia reducida", effText2: "+50 ⚙️ Acero, -100 🪙 Oro, Urgencia reducida", eff1: { gold: -300 }, eff2: { gold: -100, steel: 50 } },
+      { text: "Inundación en almacenes de madera y suministros.", opt1: "Drenar con fondos públicos", opt2: "Dejar que la población resuelva", effText1: "-150 🪙 Oro, +20 🪵 Madera recuperada", effText2: "-50 🪵 Madera perdida", eff1: { gold: -150, wood: 20 }, eff2: { wood: -50 } },
+      { text: "Escasez severa de combustible en el transporte público.", opt1: "Liberar reservas estratégicas", opt2: "Racionar estrictamente", effText1: "-40 🛢️ Petróleo, Urgencia resuelta", effText2: "+100 🪙 Oro ahorrado, -20 🛢️ Petróleo", eff1: { oil: -40 }, eff2: { gold: 100, oil: -20 } },
+      { text: "Se descubre contrabando de acero en las fronteras.", opt1: "Confiscar cargamentos", opt2: "Cobrar impuesto de silencio", effText1: "+100 ⚙️ Acero, Urgencia resuelta", effText2: "+400 🪙 Oro", eff1: { steel: 100 }, eff2: { gold: 400 } }
     ];
 
+    // Regiones con escala de 6 tonos de urgencia (Máximo 5 urgencias por región)
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, net: { gold: "+250", steel: "+20", oil: "+5", wood: "+50" }, usedEvents: [] },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 7, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, net: { gold: "+100", steel: "+45", oil: "-2", wood: "+10" }, usedEvents: [] },
-      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 4, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, net: { gold: "0", steel: "0", oil: "0", wood: "0" }, usedEvents: [] },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 10, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 1000, steel: 50, oil: 10, wood: 200, trains: 0, arms: 0 }, net: { gold: "-50", steel: "-10", oil: "0", wood: "-5" }, usedEvents: [] }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, net: { gold: "+250", steel: "+20", oil: "+5", wood: "+50" }, usedEvents: [] },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, net: { gold: "+100", steel: "+45", oil: "-2", wood: "+10" }, usedEvents: [] },
+      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, net: { gold: "0", steel: "0", oil: "0", wood: "0" }, usedEvents: [] },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 1000, steel: 50, oil: 10, wood: 200, trains: 0, arms: 0 }, net: { gold: "-50", steel: "-10", oil: "0", wood: "-5" }, usedEvents: [] }
     ];
 
     let selectedIndex = null;
     let drawerMinimized = false;
     const activeToasts = [];
 
-    // Sistema de notificaciones (Máx 3 visibles, 4ta transparente, 5ta eliminada)
+    // Notificaciones emergentes (Máximo 2 visibles por tamaño, 5 segundos de duración)
     function notify(msg) {
       const stack = document.getElementById('toastStack');
       const toast = document.createElement('div');
@@ -424,36 +447,32 @@
         toast.remove();
         const idx = activeToasts.indexOf(toast);
         if (idx > -1) activeToasts.splice(idx, 1);
-        updateToastStack();
       };
 
       stack.appendChild(toast);
       activeToasts.unshift(toast);
 
-      if (activeToasts.length > 5) {
+      if (activeToasts.length > 2) {
         const oldest = activeToasts.pop();
         if (oldest && oldest.isConnected) oldest.remove();
       }
 
-      updateToastStack();
       setTimeout(() => {
         if (toast.isConnected) {
           toast.remove();
           const idx = activeToasts.indexOf(toast);
           if (idx > -1) activeToasts.splice(idx, 1);
-          updateToastStack();
         }
-      }, 1500);
+      }, 5000); // 5 segundos
     }
 
-    function updateToastStack() {
-      activeToasts.forEach((t, i) => {
-        if (i >= 3) t.classList.add('toast-fade');
-        else t.classList.remove('toast-fade');
-      });
+    // Escala de 6 Tonos (1: Verde puro, 2: Verde claro, 3: Amarillo, 4: Naranja, 5: Rojo claro, 6: Rojo crítico)
+    function get6ToneColor(val) {
+      const colors = ['#00AA00', '#77CC00', '#DDCC00', '#FF8800', '#FF4400', '#CC0000'];
+      return colors[Math.min(Math.max(val - 1, 0), 5)];
     }
 
-    // Controles de Arrastre y Zoom del Mapa
+    // Arrastre y Zoom
     let panX = 0, panY = 0, scale = 1;
     let isDragging = false, startX = 0, startY = 0;
     const mapGroup = document.getElementById('mapGroup');
@@ -495,11 +514,6 @@
       scale = Math.min(Math.max(0.7, scale), 2.2);
       updateMapTransform();
     });
-
-    function getUrgencyColor(val) {
-      const hue = ((10 - val) / 9) * 120;
-      return `hsl(${hue}, 85%, 45%)`;
-    }
 
     function updateHUD() {
       const scopeTitle = document.getElementById('hudScopeTitle');
@@ -543,7 +557,7 @@
       drawerBody.innerHTML = '';
 
       regions.forEach((r, i) => {
-        const color = getUrgencyColor(r.status);
+        const color = get6ToneColor(r.status);
         const dotMap = document.getElementById(`dot-map-${i}`);
         if (dotMap) dotMap.style.fill = color;
 
@@ -553,7 +567,7 @@
         row.innerHTML = `
           <span><b>${r.name}</b> (${r.owner})</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-weight:600;">Urgencia: ${r.status}/10</span>
+            <span style="font-weight:600;">Nivel Urgencia: ${r.status}/6 (${r.urgenciesCount}/5 Urgencias)</span>
             <div class="status-dot" style="background:${color}"></div>
           </div>
         `;
@@ -574,8 +588,14 @@
       document.getElementById('sideRegionName').textContent = r.name;
       document.getElementById('flagLabel').textContent = r.owner.substring(0, 8);
 
-      document.getElementById('btnOpenManage').style.display = r.isPlayer ? 'block' : 'none';
       document.getElementById('sidePanel').hidden = false;
+      updateHUD();
+    }
+
+    function closeSidePanel() {
+      document.getElementById('sidePanel').hidden = true;
+      selectedIndex = null;
+      document.querySelectorAll('.region-shape').forEach(shape => shape.classList.remove('selected'));
       updateHUD();
     }
 
@@ -589,6 +609,17 @@
       if (selectedIndex === null) return;
       const r = regions[selectedIndex];
       document.getElementById('modalRegionTitle').textContent = `${r.name}`;
+
+      // Configuración de pestañas si es propia o extranjera
+      document.getElementById('tabFacBtn').hidden = !r.isPlayer;
+      document.getElementById('tabInfraBtn').hidden = !r.isPlayer;
+      document.getElementById('tabLogisBtn').hidden = !r.isPlayer;
+      document.getElementById('tabUrgencyBtn').hidden = !r.isPlayer;
+      document.getElementById('tabDiploBtn').hidden = r.isPlayer;
+
+      if (r.isPlayer) switchTab('fac');
+      else switchTab('diplo');
+
       updateModalUI();
       document.getElementById('manageModal').hidden = false;
     }
@@ -598,63 +629,66 @@
     }
 
     function switchTab(tab) {
-      ['fac', 'infra', 'logis', 'urgency'].forEach(t => {
-        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).hidden = t !== tab;
+      ['fac', 'infra', 'logis', 'urgency', 'diplo'].forEach(t => {
+        const content = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+        if (content) content.hidden = t !== tab;
         if (btn) btn.classList.toggle('active', t === tab);
       });
       if (tab === 'urgency') loadRandomUrgencyEvent();
     }
 
-    // Cargar evento aleatorio no repetible para la región
     function loadRandomUrgencyEvent() {
       const r = regions[selectedIndex];
       const availableEvents = eventPool.filter((_, idx) => !r.usedEvents.includes(idx));
       const box = document.getElementById('urgencyChoicesBox');
       box.innerHTML = '';
 
-      if (availableEvents.length === 0) {
-        document.getElementById('urgencyDescText').textContent = "No hay urgencias pendientes en esta región. Todo está bajo control.";
+      if (availableEvents.length === 0 || r.urgenciesCount <= 0) {
+        document.getElementById('urgencyDescText').textContent = "No hay urgencias pendientes en esta región. La población está en orden.";
         return;
       }
 
-      // Escoger uno aleatorio
       const eventIndex = eventPool.indexOf(availableEvents[Math.floor(Math.random() * availableEvents.length)]);
       const ev = eventPool[eventIndex];
 
       document.getElementById('urgencyDescText').textContent = ev.text;
 
+      // Sin vista previa explícita de valores numéricos en los botones
       const btn1 = document.createElement('button');
       btn1.className = 'btn-action';
       btn1.textContent = ev.opt1;
-      btn1.onclick = () => resolveUrgency(eventIndex, ev.eff1);
+      btn1.onclick = () => resolveUrgency(eventIndex, ev.eff1, ev.effText1);
 
       const btn2 = document.createElement('button');
       btn2.className = 'btn-action';
       btn2.textContent = ev.opt2;
-      btn2.onclick = () => resolveUrgency(eventIndex, ev.eff2);
+      btn2.onclick = () => resolveUrgency(eventIndex, ev.eff2, ev.effText2);
 
       box.appendChild(btn1);
       box.appendChild(btn2);
     }
 
-    function resolveUrgency(eventIdx, effects) {
+    function resolveUrgency(eventIdx, effects, outcomeText) {
       const r = regions[selectedIndex];
       r.usedEvents.push(eventIdx);
-      r.status = Math.max(1, r.status - 2); // Baja la urgencia
+      r.urgenciesCount = Math.max(0, r.urgenciesCount - 1);
+      r.status = Math.max(1, r.status - 1);
 
       if (effects.gold) r.res.gold += effects.gold;
       if (effects.steel) r.res.steel += effects.steel;
       if (effects.oil) r.res.oil += effects.oil;
       if (effects.wood) r.res.wood += effects.wood;
 
-      notify("¡Decisión tomada! Consecuencias aplicadas en la región.");
+      notify(`<b>Consecuencias Aplicadas:</b><br>${outcomeText}`);
       renderView();
       loadRandomUrgencyEvent();
     }
 
     function updateModalUI() {
       const r = regions[selectedIndex];
+      if (!r.isPlayer) return;
+
       document.getElementById('facLvText').textContent = r.factoryLv;
       document.getElementById('railLvText').textContent = r.railLv;
       document.getElementById('houseLvText').textContent = r.houseLv;
@@ -680,51 +714,82 @@
       document.getElementById('trainReqText').textContent = canTrain ? `Vías Nivel ${r.railLv} y ${r.res.trains} 🚂 tren(es) disponibles` : 'Requiere Vías Nivel 1+ y al menos 1 🚂 tren';
     }
 
+    // Validación estricta de descuento de recursos para Fábricas
     function upgradeFactory() {
       const r = regions[selectedIndex];
-      if (r.factoryLv >= 10) return notify("¡Nivel máximo de fábricas alcanzado!");
-      r.factoryLv++;
-      updateModalUI();
-      notify(`Fábrica mejorada a Nivel ${r.factoryLv}`);
+      if (r.factoryLv >= 10) return notify("❌ Error: Nivel máximo de fábricas alcanzado.");
+
+      let costGold = 500, costSteel = 100, costOil = 0;
+      if (r.factoryLv >= 5) { costGold = 1200; costSteel = 300; costOil = 100; }
+
+      if (r.res.gold >= costGold && r.res.steel >= costSteel && r.res.oil >= costOil) {
+        r.res.gold -= costGold;
+        r.res.steel -= costSteel;
+        r.res.oil -= costOil;
+        r.factoryLv++;
+        updateModalUI();
+        updateHUD();
+        notify(`✅ Fábrica mejorada a Nivel ${r.factoryLv}.`);
+      } else {
+        notify("❌ Error: Recursos insuficientes en la región para construir.");
+      }
     }
 
+    // Validación estricta de descuento para Infraestructura
     function upgradeInfra(type) {
       const r = regions[selectedIndex];
-      if (type === 'rail') { r.railLv = Math.min(5, r.railLv + 1); r.res.trains += 1; }
-      if (type === 'house') r.houseLv = Math.min(5, r.houseLv + 1);
-      if (type === 'public') r.pubLv = Math.min(5, r.pubLv + 1);
+      if (type === 'rail') {
+        if (r.res.gold >= 300 && r.res.steel >= 80) {
+          r.res.gold -= 300; r.res.steel -= 80;
+          r.railLv = Math.min(5, r.railLv + 1); r.res.trains += 1;
+          notify("✅ Vías de tren ampliadas y +1 🚂 Tren sumado.");
+        } else notify("❌ Error: Necesitas 300 🪙 Oro y 80 ⚙️ Acero.");
+      }
+      if (type === 'house') {
+        if (r.res.gold >= 200 && r.res.wood >= 150) {
+          r.res.gold -= 200; r.res.wood -= 150;
+          r.houseLv = Math.min(5, r.houseLv + 1);
+          notify("✅ Viviendas ampliadas.");
+        } else notify("❌ Error: Necesitas 200 🪙 Oro y 150 🪵 Madera.");
+      }
+      if (type === 'public') {
+        if (r.res.gold >= 400) {
+          r.res.gold -= 400;
+          r.pubLv = Math.min(5, r.pubLv + 1);
+          notify("✅ Edificio público construido.");
+        } else notify("❌ Error: Necesitas 400 🪙 Oro.");
+      }
       updateModalUI();
       updateHUD();
-      notify("Infraestructura y 🚂 trenes actualizados.");
     }
 
-    // Simulador a tiempo real en segundos para el envío de trenes
+    // Envío de trenes con cierre de modal automático
     function sendResourceTrain() {
       const r = regions[selectedIndex];
-      if (r.railLv <= 0 || r.res.trains <= 0) return notify("Error: Se requieren vías y al menos 1 🚂 tren.");
+      if (r.railLv <= 0 || r.res.trains <= 0) return notify("❌ Error: Requiere vías y al menos 1 🚂 tren libre.");
       const targetId = document.getElementById('transferTarget').value;
       const resource = document.getElementById('transferResource').value;
       const targetRegion = regions.find(item => item.id == targetId);
 
       r.res.trains--;
-      notify(`🚂 Tren de ${resource} despachado hacia ${targetRegion.name}. (Llegada en 6s)`);
-      updateModalUI();
+      closeCentralManagement(); // Cierre automático al enviar
+      notify(`🚂 Tren despachado desde ${r.name} hacia ${targetRegion.name}. (Tiempo: 6s)`);
       updateHUD();
 
-      // Simulación de tiempo real de viaje (6 segundos)
-      let secondsLeft = 6;
-      const countdownInterval = setInterval(() => {
-        secondsLeft--;
-        if (secondsLeft > 0) {
-          notify(`🚂 Tren en tránsito a ${targetRegion.name} (${secondsLeft}s)...`);
-        } else {
-          clearInterval(countdownInterval);
-          targetRegion.res[resource] += 50;
-          r.res.trains++; // El tren regresa
-          notify(`✅ ¡Tren llegado a ${targetRegion.name}! +50 recursos descargados.`);
-          updateHUD();
-        }
-      }, 6000); // 6 segundos reales
+      setTimeout(() => {
+        targetRegion.res[resource] += 50;
+        r.res.trains++;
+        notify(`✅ ¡Tren de carga ha llegado a ${targetRegion.name}! +50 recursos depositados.`);
+        updateHUD();
+      }, 6000);
+    }
+
+    function sendDiplomacy(type) {
+      const r = regions[selectedIndex];
+      if (type === 'gift') notify(`🎁 Regalo de Estado enviado a ${r.owner}.`);
+      if (type === 'demand') notify(`⚠️ Reclamación de tributo enviada a ${r.owner}.`);
+      if (type === 'pact') notify(`📜 Propuesta de No Agresión enviada a ${r.owner}.`);
+      closeCentralManagement();
     }
 
     renderView();
