@@ -11,21 +11,19 @@
 
   <style>
     :root {
-      --bg: #0F171E;
-      --surface: #16202B;
-      --card: #1C2834;
-      --line: #2E3D4D;
+      --bg: #0B1117;
+      --surface: #131C24;
+      --card: #1A2632;
+      --line: #2A3B4C;
       --ink: #E6EDF3;
       --muted: #8B949E;
       --danger: #F85149;
       --success: #3FB950;
-      --water: #0D1B2A;
-      --territory: #1B3A2B;
-      --territory-hover: #26543E;
+      --water: #2B6CB0;
       --serif: "Newsreader", Georgia, serif;
       --sans: "DM Sans", system-ui, sans-serif;
-      --radius: 12px;
-      --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -44,35 +42,38 @@
       display: flex; flex-direction: column; overflow: hidden;
     }
 
-    /* Top Bar */
+    /* Top Bar HOI4 Style */
     .top {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 20px; border-bottom: 1px solid var(--line);
-      background: var(--card); z-index: 10;
+      padding: 8px 16px; border-bottom: 1px solid var(--line);
+      background: var(--card); z-index: 10; font-size: 13px;
     }
-    .brand { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--ink); }
+    .brand { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); }
+    .top-stats { display: flex; gap: 14px; align-items: center; }
+    .stat-pill { background: var(--surface); border: 1px solid var(--line); padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    
     .back-btn {
-      padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+      padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
       background: var(--surface); color: var(--ink); cursor: pointer;
-      font-size: 13px; font-weight: 600; text-decoration: none;
+      font-size: 12px; font-weight: 600; text-decoration: none;
     }
 
     /* Floating Resource HUD */
     .resource-hud {
-      position: absolute; top: 12px; left: 12px; z-index: 20;
+      position: absolute; top: 10px; left: 10px; z-index: 20;
       background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 6px; min-width: 270px;
+      border-radius: var(--radius); padding: 8px 12px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 4px; min-width: 260px;
     }
     .hud-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
       color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 4px;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .date-badge { font-family: var(--serif); font-size: 12px; font-weight: 600; color: var(--ink); text-transform: none; }
+    .date-badge { font-family: var(--serif); font-size: 12px; font-weight: 600; color: #FFFFFF; text-transform: none; }
     
     .hud-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-size: 12px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; font-size: 11px;
     }
     .res-item { display: flex; justify-content: space-between; align-items: center; }
     .val-positive { color: var(--success); font-weight: 600; }
@@ -92,153 +93,150 @@
     }
     .map-stage:active { cursor: grabbing; }
 
-    /* Isla Unificada en Mapa Cuadrado */
+    /* Isla Soledad Layout Ensanchado */
     .square-map-wrapper {
-      width: min(92vw, 82vh); height: min(78vw, 68vh);
-      border: 2px solid var(--line); background: var(--water);
+      width: min(96vw, 86vh); height: min(80vw, 72vh);
+      border: 2px solid #1A365D; background: var(--water);
       box-shadow: var(--shadow); position: relative; border-radius: 8px; overflow: hidden;
     }
 
     #mapSvg { width: 100%; height: 100%; display: block; }
 
     .region-shape {
-      fill: var(--territory); stroke: #0D1B2A; stroke-width: 3;
-      transition: fill 0.2s, stroke-width 0.2s; cursor: pointer;
+      stroke: #0F171E; stroke-width: 2.5; stroke-dasharray: 6,3;
+      transition: filter 0.2s, stroke-width 0.2s; cursor: pointer;
     }
-    .region-shape:hover { fill: var(--territory-hover); stroke: var(--ink); stroke-width: 4; }
-    .region-shape.selected { fill: var(--territory-hover); stroke: #FFFFFF; stroke-width: 4; }
+    .region-shape:hover { filter: brightness(1.25); stroke-width: 3.5; stroke: var(--ink); }
+    .region-shape.selected { filter: brightness(1.35); stroke: #FFFFFF; stroke-width: 4; stroke-dasharray: none; }
 
     .map-label {
-      font-family: var(--serif); font-size: 13px; font-weight: 600;
+      font-family: var(--serif); font-size: 12px; font-weight: 700;
       fill: #FFFFFF; pointer-events: none; text-anchor: middle;
       text-shadow: 0 2px 4px rgba(0,0,0,0.9);
     }
 
     .map-controls-hint {
-      position: absolute; top: 12px; right: 12px; z-index: 15;
-      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
-      padding: 6px 12px; font-size: 11px; font-weight: 600; color: var(--muted);
+      position: absolute; top: 10px; right: 10px; z-index: 15;
+      background: var(--card); border: 1px solid var(--line); border-radius: 6px;
+      padding: 4px 10px; font-size: 10px; font-weight: 600; color: var(--muted);
       box-shadow: var(--shadow); pointer-events: none;
     }
 
     /* Floating Time Controls Bar */
     .time-control-hud {
-      position: absolute; bottom: 16px; right: 16px; z-index: 25;
+      position: absolute; bottom: 14px; right: 14px; z-index: 25;
       background: var(--card); border: 1px solid var(--line); border-radius: 999px;
-      padding: 6px 12px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 6px;
     }
     .time-btn {
       background: var(--surface); border: 1px solid var(--line); border-radius: 50%;
-      width: 28px; height: 28px; display: grid; place-items: center;
-      font-size: 11px; font-weight: bold; cursor: pointer; color: var(--ink);
+      width: 26px; height: 26px; display: grid; place-items: center;
+      font-size: 10px; font-weight: bold; cursor: pointer; color: var(--ink);
     }
     .time-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
     /* Bottom Collapsible Regional List */
     .bottom-drawer {
       background: var(--card); border-top: 1px solid var(--line);
-      max-height: 180px; display: flex; flex-direction: column;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.3); z-index: 10;
+      max-height: 160px; display: flex; flex-direction: column;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.4); z-index: 10;
     }
     .drawer-header {
-      padding: 8px 16px; display: flex; justify-content: space-between;
+      padding: 6px 14px; display: flex; justify-content: space-between;
       align-items: center; cursor: pointer; border-bottom: 1px solid var(--line);
     }
-    .drawer-title { font-family: var(--serif); font-size: 15px; margin: 0; font-weight: 600; }
-    .drawer-body { overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .drawer-title { font-family: var(--serif); font-size: 14px; margin: 0; font-weight: 600; }
+    .drawer-body { overflow-y: auto; padding: 6px 14px; display: flex; flex-direction: column; gap: 4px; }
     .drawer-body.minimized { display: none; }
 
     .region-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; background: var(--surface); border-radius: 8px; border: 1px solid var(--line);
-      cursor: pointer; font-size: 13px;
+      padding: 6px 10px; background: var(--surface); border-radius: 6px; border: 1px solid var(--line);
+      cursor: pointer; font-size: 12px;
     }
     .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel con Bandera SVG NAtiva */
+    /* Left Sidebar Panel con Bandera SVG Nativa */
     .side-panel {
-      position: absolute; left: 12px; top: 190px; width: 230px;
+      position: absolute; left: 10px; top: 175px; width: 220px;
       background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 8px; z-index: 20;
+      border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 6px; z-index: 20;
     }
     .side-panel-header { display: flex; justify-content: space-between; align-items: center; }
-    .side-close-btn { background: none; border: 0; font-size: 18px; font-weight: bold; cursor: pointer; color: var(--ink); padding: 0 4px; }
+    .side-close-btn { background: none; border: 0; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--ink); padding: 0 4px; }
 
     .flag-box {
       width: 100%; height: 50px; border: 1px solid var(--line);
-      background: var(--surface); border-radius: 6px; overflow: hidden;
+      background: var(--surface); border-radius: 4px; overflow: hidden;
       display: grid; place-items: center;
     }
     .flag-box svg { width: 100%; height: 100%; display: block; }
 
     .info-group { display: flex; flex-direction: column; gap: 1px; }
-    .info-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
-    .info-value { font-size: 12px; font-weight: 600; }
+    .info-label { font-size: 8px; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+    .info-value { font-size: 11px; font-weight: 600; }
 
     .manage-btn {
-      margin-top: 4px; width: 100%; height: 34px; border-radius: 999px;
+      margin-top: 2px; width: 100%; height: 32px; border-radius: 999px;
       border: 1px solid var(--line); background: var(--ink); color: var(--bg);
-      font-weight: 600; font-size: 12px; cursor: pointer;
+      font-weight: 600; font-size: 11px; cursor: pointer;
     }
-    .manage-btn:hover { opacity: 0.9; }
 
     /* Modals */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
       display: grid; place-items: center; z-index: 30; padding: 16px;
     }
     .center-modal {
-      width: min(100%, 460px); max-height: 85dvh; overflow-y: auto;
+      width: min(100%, 450px); max-height: 85dvh; overflow-y: auto;
       background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 12px;
+      border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 10px;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-family: var(--serif); font-size: 20px; margin: 0; }
-    .close-btn { background: none; border: 0; font-size: 20px; cursor: pointer; color: var(--ink); }
+    .modal-title { font-family: var(--serif); font-size: 18px; margin: 0; }
+    .close-btn { background: none; border: 0; font-size: 18px; cursor: pointer; color: var(--ink); }
 
-    .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
     .tab-btn {
-      flex: 1; padding: 6px; border-radius: 6px; border: 1px solid var(--line);
-      background: var(--surface); font-size: 11px; font-weight: 600; cursor: pointer; color: var(--ink);
+      flex: 1; padding: 5px; border-radius: 4px; border: 1px solid var(--line);
+      background: var(--surface); font-size: 10px; font-weight: 600; cursor: pointer; color: var(--ink);
     }
     .tab-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-    .tab-content { display: flex; flex-direction: column; gap: 10px; }
+    .tab-content { display: flex; flex-direction: column; gap: 8px; }
 
     .upgrade-card {
-      background: var(--surface); padding: 12px; border-radius: 8px;
-      border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;
+      background: var(--surface); padding: 10px; border-radius: 6px;
+      border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px;
     }
-    .upgrade-card b { font-size: 13px; }
-    .upgrade-card p { margin: 0; font-size: 11px; color: var(--muted); }
+    .upgrade-card b { font-size: 12px; }
+    .upgrade-card p { margin: 0; font-size: 10px; color: var(--muted); }
 
     .btn-action {
-      height: 34px; border-radius: 6px; border: 1px solid var(--line);
-      background: var(--ink); color: var(--bg); font-weight: 600; font-size: 12px; cursor: pointer;
+      height: 32px; border-radius: 4px; border: 1px solid var(--line);
+      background: var(--ink); color: var(--bg); font-weight: 600; font-size: 11px; cursor: pointer;
     }
 
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
 
-    /* Notification Stack */
     .notification-stack {
-      position: fixed; bottom: 60px; right: 16px; z-index: 100;
-      display: flex; flex-direction: column; gap: 8px; max-width: 320px; pointer-events: none;
+      position: fixed; bottom: 50px; right: 14px; z-index: 100;
+      display: flex; flex-direction: column; gap: 6px; max-width: 300px; pointer-events: none;
     }
     .custom-toast {
       pointer-events: auto; background: var(--card); color: var(--ink);
-      border: 1px solid var(--line);
-      padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 500;
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4); line-height: 1.4;
+      border: 1px solid var(--line); padding: 10px 12px; border-radius: 8px; font-size: 11px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); line-height: 1.3;
     }
-    .toast-close { background: none; border: 0; color: inherit; font-size: 16px; cursor: pointer; padding: 0 4px; }
+    .toast-close { background: none; border: 0; color: inherit; font-size: 14px; cursor: pointer; padding: 0 2px; }
 
     .version-badge {
-      position: fixed; bottom: 8px; left: 8px; z-index: 50;
-      background: var(--card); border: 1px solid var(--line); padding: 3px 8px;
-      border-radius: 999px; font-size: 10px; font-weight: 600; color: var(--muted);
+      position: fixed; bottom: 6px; left: 6px; z-index: 50;
+      background: var(--card); border: 1px solid var(--line); padding: 2px 6px;
+      border-radius: 999px; font-size: 9px; font-weight: 600; color: var(--muted);
       pointer-events: none;
     }
   </style>
@@ -250,6 +248,11 @@
   <div class="app">
     <header class="top">
       <div class="brand">Mapa Territorial</div>
+      <div class="top-stats">
+        <span class="stat-pill" title="Poder Político">📜 PP: <span id="ppVal">120</span></span>
+        <span class="stat-pill" title="Estabilidad Nacional">⚖️ Estabilidad: <span id="stabVal">85%</span></span>
+        <span class="stat-pill" title="Mano de Obra Disponible">👥 Manpower: <span id="mpVal">1.2M</span></span>
+      </div>
       <a href="index.html" class="back-btn">‹ Volver al Menú</a>
     </header>
 
@@ -283,29 +286,29 @@
         <button class="time-btn" id="btnFast" onclick="setTimeSpeed(15)" title="Rápido (15 seg/día)">⏩</button>
       </div>
 
-      <!-- Isla Unificada Continua en SVG -->
+      <!-- Silueta Inspirada en la Isla Soledad (East Falkland) -->
       <div class="square-map-wrapper" id="mapWrapper">
         <svg id="mapSvg" viewBox="0 0 500 500">
           <g id="mapGroup">
-            <!-- Isla Unificada - Región 0: Capital Core (Noroeste) -->
-            <path d="M 120 50 C 200 30, 240 40, 250 80 L 250 250 L 50 250 C 40 180, 50 100, 120 50 Z" class="region-shape" id="shape-0" onclick="selectRegion(0)"/>
-            <text x="140" y="150" class="map-label">Capital Core</text>
-            <circle cx="210" cy="80" r="7" id="dot-map-0" class="status-dot"/>
+            <!-- Región 0: Capital Core (Norte de la Isla Soledad - Reino de Prusia) -->
+            <path d="M 180 60 C 240 40, 310 50, 380 90 C 440 130, 430 180, 390 220 L 260 220 C 230 180, 150 120, 180 60 Z" class="region-shape" id="shape-0" fill="#2D5A3F" onclick="selectRegion(0)"/>
+            <text x="290" y="140" class="map-label">Capital Core</text>
+            <circle cx="280" cy="110" r="6" id="dot-map-0" class="status-dot"/>
 
-            <!-- Isla Unificada - Región 1: Northern Iron Hills (Noreste) -->
-            <path d="M 250 80 C 260 40, 320 30, 380 50 C 450 100, 460 180, 450 250 L 250 250 Z" class="region-shape" id="shape-1" onclick="selectRegion(1)"/>
-            <text x="360" y="150" class="map-label">Northern Iron Hills</text>
-            <circle cx="420" cy="90" r="7" id="dot-map-1" class="status-dot"/>
+            <!-- Región 1: Northern Iron Hills (Este de la Isla Soledad - Reino de Prusia) -->
+            <path d="M 380 90 C 430 110, 460 160, 450 230 C 440 290, 370 300, 300 280 L 260 220 L 390 220 Z" class="region-shape" id="shape-1" fill="#2D5A3F" onclick="selectRegion(1)"/>
+            <text x="370" y="240" class="map-label">Northern Iron Hills</text>
+            <circle cx="390" cy="200" r="6" id="dot-map-1" class="status-dot"/>
 
-            <!-- Isla Unificada - Región 2: Western Coast (Suroeste) -->
-            <path d="M 50 250 L 250 250 L 250 450 C 180 460, 100 450, 50 380 C 30 320, 40 280, 50 250 Z" class="region-shape" id="shape-2" onclick="selectRegion(2)"/>
-            <text x="140" y="350" class="map-label">Western Coast</text>
-            <circle cx="210" cy="410" r="7" id="dot-map-2" class="status-dot"/>
+            <!-- Región 2: Western Coast (Istmo y Sur - República Española) -->
+            <path d="M 180 60 C 150 120, 230 180, 260 220 L 200 310 C 130 300, 70 250, 90 180 C 100 130, 140 80, 180 60 Z" class="region-shape" id="shape-2" fill="#8C3A3A" onclick="selectRegion(2)"/>
+            <text x="160" y="210" class="map-label">Western Coast</text>
+            <circle cx="180" cy="230" r="6" id="dot-map-2" class="status-dot"/>
 
-            <!-- Isla Unificada - Región 3: Southern Wasteland (Sureste) -->
-            <path d="M 250 250 L 450 250 C 460 280, 470 320, 450 380 C 400 450, 320 460, 250 450 Z" class="region-shape" id="shape-3" onclick="selectRegion(3)"/>
-            <text x="360" y="350" class="map-label">Southern Wasteland</text>
-            <circle cx="420" cy="410" r="7" id="dot-map-3" class="status-dot"/>
+            <!-- Región 3: Southern Wasteland (Península Lafonia de la Isla Soledad - Reino de Prusia) -->
+            <path d="M 260 220 L 300 280 C 350 340, 330 420, 260 440 C 180 450, 140 380, 200 310 Z" class="region-shape" id="shape-3" fill="#2D5A3F" onclick="selectRegion(3)"/>
+            <text x="250" y="350" class="map-label">Southern Wasteland</text>
+            <circle cx="260" cy="380" r="6" id="dot-map-3" class="status-dot"/>
           </g>
         </svg>
       </div>
@@ -332,12 +335,12 @@
     <div class="bottom-drawer">
       <div class="drawer-header" onclick="toggleDrawer()">
         <h3 class="drawer-title">Lista de Regiones</h3>
-        <span id="drawerToggleBtn" style="font-size:12px; font-weight:600; color:var(--muted);">[-] Minimizar</span>
+        <span id="drawerToggleBtn" style="font-size:11px; font-weight:600; color:var(--muted);">[-] Minimizar</span>
       </div>
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <div class="version-badge">Ver: v1.1.1-beta</div>
+    <div class="version-badge">Ver: v1.1.2-beta</div>
   </div>
 
   <!-- Modal Central -->
@@ -444,8 +447,8 @@
     let activeWorld = saves.length > 0 ? saves[0] : null;
     const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Reino de Prusia";
 
-    // SVGs Vectoriales Nativos de Banderas
-    const SVG_PRUSSIA = `<svg viewBox="0 0 600 360" width="100%" height="100%"><rect width="600" height="360" fill="#FFFFFF"/><rect width="600" height="70" fill="#000000"/><rect y="290" width="600" height="70" fill="#000000"/><path d="M 300 130 C 270 130, 250 160, 250 190 C 250 220, 270 240, 300 240 C 330 240, 350 220, 350 190 C 350 160, 330 130, 300 130 Z" fill="none" stroke="#000000" stroke-width="8"/><path d="M 280 180 L 320 180 M 300 160 L 300 200" stroke="#000000" stroke-width="6"/></svg>`;
+    // Escudo del Águila Prusiana Vectorial Nítido
+    const SVG_PRUSSIA = `<svg viewBox="0 0 600 360" width="100%" height="100%"><rect width="600" height="360" fill="#FFFFFF"/><rect width="600" height="70" fill="#000000"/><rect y="290" width="600" height="70" fill="#000000"/><path d="M 300 120 L 260 170 L 280 180 L 250 220 L 290 210 L 300 240 L 310 210 L 350 220 L 320 180 L 340 170 Z" fill="#000000"/><circle cx="300" cy="110" r="12" fill="#D4AF37"/><path d="M 285 180 Q 300 160 315 180" fill="none" stroke="#FFFFFF" stroke-width="4"/></svg>`;
     const SVG_SPAIN_REP = `<svg viewBox="0 0 600 360" width="100%" height="100%"><rect width="600" height="120" fill="#AD1519"/><rect y="120" width="600" height="120" fill="#FABD00"/><rect y="240" width="600" height="120" fill="#4B0082"/></svg>`;
 
     const eventPool = [
@@ -455,20 +458,20 @@
       { text: "Se descubre contrabando de acero en las fronteras.", opt1: "Confiscar cargamentos", opt2: "Cobrar impuesto de silencio", effText1: "+100 ⚙️ Acero, Urgencia resuelta", effText2: "+400 🪙 Oro", eff1: { steel: 100 }, eff2: { gold: 400 } }
     ];
 
+    // Mismo color político para todas las regiones de un mismo país (#2D5A3F para Prusia)
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
-      { id: 2, name: "Western Coast", owner: "República Española", isPlayer: false, flagSvg: SVG_SPAIN_REP, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, flagSvg: SVG_PRUSSIA, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, color: "#2D5A3F", flagSvg: SVG_PRUSSIA, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, color: "#2D5A3F", flagSvg: SVG_PRUSSIA, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
+      { id: 2, name: "Western Coast", owner: "República Española", isPlayer: false, color: "#8C3A3A", flagSvg: SVG_SPAIN_REP, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, color: "#2D5A3F", flagSvg: SVG_PRUSSIA, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
     ];
 
     let selectedIndex = null;
     let drawerMinimized = false;
     const activeToasts = [];
 
-    // Sistema de Tiempo y Conteo Regresivo
     let gameDay = 1, gameYear = 1936;
-    let secondsPerDay = 30; // Modo Normal: 30 segundos por defecto
+    let secondsPerDay = 30; 
     let secondsRemaining = 30;
     let timeTimer = null;
     let savedSpeedBeforePause = 30;
@@ -521,6 +524,10 @@
           r.res.wood += r.netRaw.wood;
         }
       });
+
+      // PP acumulado diario
+      const ppElem = document.getElementById('ppVal');
+      ppElem.textContent = parseInt(ppElem.textContent) + 1;
 
       notify(`📅 <b>Día ${gameDay} iniciado:</b> Producción y costes aplicados.`);
       updateHUD();
@@ -653,7 +660,6 @@
         const row = document.createElement('div');
         row.className = 'region-row';
         row.onclick = () => selectRegion(i);
-        // Ocultado el texto "Urgencia: X/6", mostrando solo pendientes
         row.innerHTML = `
           <span><b>${r.name}</b> (${r.owner})</span>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -676,8 +682,6 @@
 
       document.getElementById('sideNationName').textContent = r.owner;
       document.getElementById('sideRegionName').textContent = r.name;
-      
-      // Cargar SVG nativo de bandera
       document.getElementById('sideFlagBox').innerHTML = r.flagSvg;
 
       const manageBtn = document.getElementById('btnOpenManage');
@@ -904,7 +908,7 @@
       closeCentralManagement();
     }
 
-    setTimeSpeed(30); // Iniciar tiempo normal (30 seg/día) por defecto
+    setTimeSpeed(30);
     renderView();
   </script>
 </body>
