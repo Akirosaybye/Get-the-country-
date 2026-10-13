@@ -72,12 +72,15 @@
       position: absolute; top: 12px; left: 12px; z-index: 20;
       background: var(--card); border: 1px solid var(--line);
       border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 6px; min-width: 240px;
+      display: flex; flex-direction: column; gap: 6px; min-width: 250px;
     }
     .hud-title {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
       color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 4px;
+      display: flex; justify-content: space-between; align-items: center;
     }
+    .date-badge { font-family: var(--serif); font-size: 12px; font-weight: 600; color: var(--ink); text-transform: none; }
+    
     .hud-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-size: 12px;
     }
@@ -91,7 +94,7 @@
       color: var(--muted); cursor: pointer; text-decoration: underline; margin-top: 2px;
     }
 
-    /* Interactive Map Canvas Container - Wider Layout */
+    /* Interactive Map Canvas Container */
     .map-stage {
       flex: 1; position: relative; background: var(--surface);
       overflow: hidden; cursor: grab; user-select: none;
@@ -127,18 +130,31 @@
       box-shadow: var(--shadow); pointer-events: none;
     }
 
+    /* Floating Time Controls Bar (Abajo a la derecha) */
+    .time-control-hud {
+      position: absolute; bottom: 16px; right: 16px; z-index: 25;
+      background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 12px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px;
+    }
+    .time-btn {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 50%;
+      width: 28px; height: 28px; display: grid; place-items: center;
+      font-size: 11px; font-weight: bold; cursor: pointer; color: var(--ink);
+    }
+    .time-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
     /* Bottom Collapsible Regional List */
     .bottom-drawer {
       background: var(--card); border-top: 1px solid var(--line);
-      max-height: 200px; display: flex; flex-direction: column;
+      max-height: 180px; display: flex; flex-direction: column;
       box-shadow: 0 -4px 16px rgba(0,0,0,0.05); z-index: 10;
     }
     .drawer-header {
-      padding: 10px 16px; display: flex; justify-content: space-between;
+      padding: 8px 16px; display: flex; justify-content: space-between;
       align-items: center; cursor: pointer; border-bottom: 1px solid var(--line);
     }
     .drawer-title { font-family: var(--serif); font-size: 15px; margin: 0; font-weight: 600; }
-    .drawer-body { overflow-y: auto; padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .drawer-body { overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 6px; }
     .drawer-body.minimized { display: none; }
 
     .region-row {
@@ -148,20 +164,15 @@
     }
     .region-row:hover { border-color: var(--ink); }
 
-    /* Left Sidebar Panel with Close Button */
+    /* Left Sidebar Panel */
     .side-panel {
       position: absolute; left: 12px; top: 190px; width: 230px;
       background: var(--card); border: 1px solid var(--line);
       border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
       display: flex; flex-direction: column; gap: 8px; z-index: 20;
     }
-    .side-panel-header {
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .side-close-btn {
-      background: none; border: 0; font-size: 18px; font-weight: bold;
-      cursor: pointer; color: var(--ink); padding: 0 4px;
-    }
+    .side-panel-header { display: flex; justify-content: space-between; align-items: center; }
+    .side-close-btn { background: none; border: 0; font-size: 18px; font-weight: bold; cursor: pointer; color: var(--ink); padding: 0 4px; }
 
     .flag-box {
       width: 100%; height: 38px; border: 1px solid var(--ink);
@@ -218,9 +229,9 @@
 
     .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
 
-    /* Outcome Notification Stack - Max 2 visible, 5s duration */
+    /* Notification Stack - Above Time Controls */
     .notification-stack {
-      position: fixed; bottom: 16px; right: 16px; z-index: 100;
+      position: fixed; bottom: 60px; right: 16px; z-index: 100;
       display: flex; flex-direction: column; gap: 8px; max-width: 320px; pointer-events: none;
     }
     .custom-toast {
@@ -250,9 +261,12 @@
     </header>
 
     <main class="map-stage" id="mapStage">
-      <!-- HUD de Recursos -->
+      <!-- HUD de Recursos y Fecha -->
       <div class="resource-hud" id="resourceHud">
-        <div class="hud-title" id="hudScopeTitle">Recursos del País (Total)</div>
+        <div class="hud-title">
+          <span id="hudScopeTitle">Recursos del País</span>
+          <span class="date-badge" id="gameDateText">Día 1, 1936</span>
+        </div>
         <div class="hud-grid" id="hudMainGrid">
           <div class="res-item"><span>🪙 Oro:</span> <b id="resValGold">12,000</b></div>
           <div class="res-item"><span>⚙️ Acero:</span> <b id="resValSteel">900</b></div>
@@ -267,6 +281,14 @@
       </div>
 
       <div class="map-controls-hint">Arrastrar: Clic + Arrastrar | Zoom: Rueda / Z / WASD</div>
+
+      <!-- Control de Tiempo Flotante -->
+      <div class="time-control-hud">
+        <button class="time-btn" id="btnPause" onclick="setTimeSpeed(0)" title="Pausar">II</button>
+        <button class="time-btn" id="btnSlow" onclick="setTimeSpeed(300)" title="Lento (5 min/día)">🐢</button>
+        <button class="time-btn active" id="btnNorm" onclick="setTimeSpeed(120)" title="Normal (2 min/día)">▶</button>
+        <button class="time-btn" id="btnFast" onclick="setTimeSpeed(30)" title="Rápido (30 seg/día)">⏩</button>
+      </div>
 
       <!-- Cuadrado Perfecto del Mapa -->
       <div class="square-map-wrapper" id="mapWrapper">
@@ -291,7 +313,7 @@
         </svg>
       </div>
 
-      <!-- Panel Lateral Izquierdo con botón "X" -->
+      <!-- Panel Lateral Izquierdo -->
       <div class="side-panel" id="sidePanel" hidden>
         <div class="side-panel-header">
           <div class="flag-box" style="flex:1;"><span class="flag-label" id="flagLabel">ESTADO</span></div>
@@ -318,10 +340,10 @@
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
-    <div class="version-badge">Ver: v1.0.8-beta</div>
+    <div class="version-badge">Ver: v1.0.9-beta</div>
   </div>
 
-  <!-- Modal Central de Gestión / Diplomacia -->
+  <!-- Modal Central de Gestión -->
   <div class="modal-overlay" id="manageModal" hidden>
     <div class="center-modal">
       <div class="modal-header">
@@ -386,7 +408,7 @@
         </div>
       </div>
 
-      <!-- Pestaña 4: Urgencias (Solo visión para la propia nación) -->
+      <!-- Pestaña 4: Urgencias -->
       <div class="tab-content" id="tabUrgency" hidden>
         <div class="upgrade-card" style="border-color:var(--danger);">
           <b>⚠️ Urgencia Regional Activa</b>
@@ -395,7 +417,7 @@
         </div>
       </div>
 
-      <!-- Pestaña 5: Diplomacia Extranjera -->
+      <!-- Pestaña 5: Diplomacia -->
       <div class="tab-content" id="tabDiplo" hidden>
         <div class="upgrade-card">
           <b>Acciones Diplomáticas Extranjeras</b>
@@ -416,7 +438,7 @@
     let activeWorld = saves.length > 0 ? saves[0] : null;
     const playerName = (activeWorld && activeWorld.name.trim() !== "") ? activeWorld.name : "Imperio Jugador";
 
-    // Pool de Escenarios para Decisiones
+    // Eventos de dilemas
     const eventPool = [
       { text: "Huelga de obreros ferroviarios exigiendo mejores pagas.", opt1: "Conceder subsidio", opt2: "Forzar trabajo obligado", effText1: "-300 🪙 Oro, Urgencia reducida", effText2: "+50 ⚙️ Acero, -100 🪙 Oro, Urgencia reducida", eff1: { gold: -300 }, eff2: { gold: -100, steel: 50 } },
       { text: "Inundación en almacenes de madera y suministros.", opt1: "Drenar con fondos públicos", opt2: "Dejar que la población resuelva", effText1: "-150 🪙 Oro, +20 🪵 Madera recuperada", effText2: "-50 🪵 Madera perdida", eff1: { gold: -150, wood: 20 }, eff2: { wood: -50 } },
@@ -424,19 +446,62 @@
       { text: "Se descubre contrabando de acero en las fronteras.", opt1: "Confiscar cargamentos", opt2: "Cobrar impuesto de silencio", effText1: "+100 ⚙️ Acero, Urgencia resuelta", effText2: "+400 🪙 Oro", eff1: { steel: 100 }, eff2: { gold: 400 } }
     ];
 
-    // Regiones con escala de 6 tonos de urgencia (Máximo 5 urgencias por región)
+    // Datos iniciales de regiones con valores netos por día
     const regions = [
-      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, net: { gold: "+250", steel: "+20", oil: "+5", wood: "+50" }, usedEvents: [] },
-      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, net: { gold: "+100", steel: "+45", oil: "-2", wood: "+10" }, usedEvents: [] },
-      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, net: { gold: "0", steel: "0", oil: "0", wood: "0" }, usedEvents: [] },
-      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 1000, steel: 50, oil: 10, wood: 200, trains: 0, arms: 0 }, net: { gold: "-50", steel: "-10", oil: "0", wood: "-5" }, usedEvents: [] }
+      { id: 0, name: "Capital Core", owner: playerName, isPlayer: true, status: 2, urgenciesCount: 1, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 5000, steel: 400, oil: 200, wood: 1000, trains: 2, arms: 150 }, netRaw: { gold: 250, steel: 20, oil: 5, wood: 50 }, usedEvents: [] },
+      { id: 1, name: "Northern Iron Hills", owner: playerName, isPlayer: true, status: 5, urgenciesCount: 3, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 0, res: { gold: 3000, steel: 350, oil: 50, wood: 800, trains: 1, arms: 50 }, netRaw: { gold: 100, steel: 45, oil: -2, wood: 10 }, usedEvents: [] },
+      { id: 2, name: "Western Coast", owner: "República Neutral", isPlayer: false, status: 3, urgenciesCount: 2, factoryLv: 1, railLv: 1, houseLv: 1, pubLv: 1, res: { gold: 2000, steel: 100, oil: 200, wood: 500, trains: 1, arms: 20 }, netRaw: { gold: 0, steel: 0, oil: 0, wood: 0 }, usedEvents: [] },
+      { id: 3, name: "Southern Wasteland", owner: playerName, isPlayer: true, status: 6, urgenciesCount: 5, factoryLv: 0, railLv: 0, houseLv: 0, pubLv: 0, res: { gold: 800, steel: 150, oil: -30, wood: 0, trains: 0, arms: 0 }, netRaw: { gold: -50, steel: -10, oil: 0, wood: -5 }, usedEvents: [] }
     ];
 
     let selectedIndex = null;
     let drawerMinimized = false;
     const activeToasts = [];
 
-    // Notificaciones emergentes (Máximo 2 visibles por tamaño, 5 segundos de duración)
+    // Sistema de Tiempo en Tiempo Real
+    let gameDay = 1, gameYear = 1936;
+    let secondsPerDay = 120; // 2 minutos por defecto
+    let timeTimer = null;
+    let savedSpeedBeforePause = 120;
+
+    function setTimeSpeed(seconds) {
+      if (timeTimer) clearInterval(timeTimer);
+
+      document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+      if (seconds === 0) {
+        document.getElementById('btnPause').classList.add('active');
+        timeTimer = null;
+        return;
+      }
+
+      savedSpeedBeforePause = seconds;
+      if (seconds === 300) document.getElementById('btnSlow').classList.add('active');
+      if (seconds === 120) document.getElementById('btnNorm').classList.add('active');
+      if (seconds === 30) document.getElementById('btnFast').classList.add('active');
+
+      timeTimer = setInterval(advanceOneDay, seconds * 1000);
+    }
+
+    function advanceOneDay() {
+      gameDay++;
+      if (gameDay > 365) { gameDay = 1; gameYear++; }
+      document.getElementById('gameDateText').textContent = `Día ${gameDay}, ${gameYear}`;
+
+      // Sumar/Restar producción diaria neta a cada región de forma realista
+      regions.forEach(r => {
+        if (r.isPlayer) {
+          r.res.gold += r.netRaw.gold;
+          r.res.steel += r.netRaw.steel;
+          r.res.oil += r.netRaw.oil;
+          r.res.wood += r.netRaw.wood;
+        }
+      });
+
+      notify(`📅 <b>Día ${gameDay} iniciado:</b> Producción y costes diarios aplicados.`);
+      updateHUD();
+    }
+
+    // Notificaciones emergentes
     function notify(msg) {
       const stack = document.getElementById('toastStack');
       const toast = document.createElement('div');
@@ -463,10 +528,9 @@
           const idx = activeToasts.indexOf(toast);
           if (idx > -1) activeToasts.splice(idx, 1);
         }
-      }, 5000); // 5 segundos
+      }, 5000);
     }
 
-    // Escala de 6 Tonos (1: Verde puro, 2: Verde claro, 3: Amarillo, 4: Naranja, 5: Rojo claro, 6: Rojo crítico)
     function get6ToneColor(val) {
       const colors = ['#00AA00', '#77CC00', '#DDCC00', '#FF8800', '#FF4400', '#CC0000'];
       return colors[Math.min(Math.max(val - 1, 0), 5)];
@@ -518,7 +582,7 @@
     function updateHUD() {
       const scopeTitle = document.getElementById('hudScopeTitle');
       if (selectedIndex === null) {
-        scopeTitle.textContent = "Recursos del País (Total)";
+        scopeTitle.textContent = "Recursos del País";
         const totals = { gold: 0, steel: 0, oil: 0, wood: 0, trains: 0, arms: 0 };
         regions.filter(r => r.isPlayer).forEach(r => {
           Object.keys(totals).forEach(k => totals[k] += r.res[k]);
@@ -532,18 +596,20 @@
       } else {
         const r = regions[selectedIndex];
         scopeTitle.textContent = `Recursos de: ${r.name}`;
-        document.getElementById('resValGold').innerHTML = `${r.res.gold.toLocaleString()} <small class="${getValueClass(r.net.gold)}">(${r.net.gold})</small>`;
-        document.getElementById('resValSteel').innerHTML = `${r.res.steel.toLocaleString()} <small class="${getValueClass(r.net.steel)}">(${r.net.steel})</small>`;
-        document.getElementById('resValOil').innerHTML = `${r.res.oil.toLocaleString()} <small class="${getValueClass(r.net.oil)}">(${r.net.oil})</small>`;
-        document.getElementById('resValWood').innerHTML = `${r.res.wood.toLocaleString()} <small class="${getValueClass(r.net.wood)}">(${r.net.wood})</small>`;
+        document.getElementById('resValGold').innerHTML = `${r.res.gold.toLocaleString()} <small class="${getValueClass(r.netRaw.gold)}">(${formatNet(r.netRaw.gold)})</small>`;
+        document.getElementById('resValSteel').innerHTML = `${r.res.steel.toLocaleString()} <small class="${getValueClass(r.netRaw.steel)}">(${formatNet(r.netRaw.steel)})</small>`;
+        document.getElementById('resValOil').innerHTML = `${r.res.oil.toLocaleString()} <small class="${getValueClass(r.netRaw.oil)}">(${formatNet(r.netRaw.oil)})</small>`;
+        document.getElementById('resValWood').innerHTML = `${r.res.wood.toLocaleString()} <small class="${getValueClass(r.netRaw.wood)}">(${formatNet(r.netRaw.wood)})</small>`;
         document.getElementById('resValTrains').textContent = r.res.trains;
         document.getElementById('resValArms').textContent = r.res.arms;
       }
     }
 
-    function getValueClass(valStr) {
-      if (valStr.startsWith('+')) return 'val-positive';
-      if (valStr.startsWith('-')) return 'val-negative';
+    function formatNet(num) { return num > 0 ? `+${num}` : `${num}`; }
+
+    function getValueClass(num) {
+      if (num > 0) return 'val-positive';
+      if (num < 0) return 'val-negative';
       return 'val-neutral';
     }
 
@@ -607,10 +673,11 @@
 
     function openCentralManagement() {
       if (selectedIndex === null) return;
+      setTimeSpeed(0); // Pausa automática al abrir gestión
+
       const r = regions[selectedIndex];
       document.getElementById('modalRegionTitle').textContent = `${r.name}`;
 
-      // Configuración de pestañas si es propia o extranjera
       document.getElementById('tabFacBtn').hidden = !r.isPlayer;
       document.getElementById('tabInfraBtn').hidden = !r.isPlayer;
       document.getElementById('tabLogisBtn').hidden = !r.isPlayer;
@@ -626,6 +693,7 @@
 
     function closeCentralManagement() {
       document.getElementById('manageModal').hidden = true;
+      setTimeSpeed(savedSpeedBeforePause); // Reanudar tiempo
     }
 
     function switchTab(tab) {
@@ -654,7 +722,6 @@
 
       document.getElementById('urgencyDescText').textContent = ev.text;
 
-      // Sin vista previa explícita de valores numéricos en los botones
       const btn1 = document.createElement('button');
       btn1.className = 'btn-action';
       btn1.textContent = ev.opt1;
@@ -714,7 +781,7 @@
       document.getElementById('trainReqText').textContent = canTrain ? `Vías Nivel ${r.railLv} y ${r.res.trains} 🚂 tren(es) disponibles` : 'Requiere Vías Nivel 1+ y al menos 1 🚂 tren';
     }
 
-    // Validación estricta de descuento de recursos para Fábricas
+    // Corrección exacta de construcción con validación estricta de la región seleccionada
     function upgradeFactory() {
       const r = regions[selectedIndex];
       if (r.factoryLv >= 10) return notify("❌ Error: Nivel máximo de fábricas alcanzado.");
@@ -722,20 +789,21 @@
       let costGold = 500, costSteel = 100, costOil = 0;
       if (r.factoryLv >= 5) { costGold = 1200; costSteel = 300; costOil = 100; }
 
-      if (r.res.gold >= costGold && r.res.steel >= costSteel && r.res.oil >= costOil) {
+      // Validación comprobada directamente sobre el inventario real de la región
+      if (r.res.gold >= costGold && r.res.steel >= costSteel && (r.factoryLv < 5 || r.res.oil >= costOil)) {
         r.res.gold -= costGold;
         r.res.steel -= costSteel;
-        r.res.oil -= costOil;
+        if (r.factoryLv >= 5) r.res.oil -= costOil;
+        
         r.factoryLv++;
         updateModalUI();
         updateHUD();
-        notify(`✅ Fábrica mejorada a Nivel ${r.factoryLv}.`);
+        notify(`✅ Complejo industrial mejorado a Nivel ${r.factoryLv}.`);
       } else {
-        notify("❌ Error: Recursos insuficientes en la región para construir.");
+        notify(`❌ Error: Se requieren ${costGold} 🪙 Oro y ${costSteel} ⚙️ Acero en ${r.name}.`);
       }
     }
 
-    // Validación estricta de descuento para Infraestructura
     function upgradeInfra(type) {
       const r = regions[selectedIndex];
       if (type === 'rail') {
@@ -763,7 +831,6 @@
       updateHUD();
     }
 
-    // Envío de trenes con cierre de modal automático
     function sendResourceTrain() {
       const r = regions[selectedIndex];
       if (r.railLv <= 0 || r.res.trains <= 0) return notify("❌ Error: Requiere vías y al menos 1 🚂 tren libre.");
@@ -772,7 +839,7 @@
       const targetRegion = regions.find(item => item.id == targetId);
 
       r.res.trains--;
-      closeCentralManagement(); // Cierre automático al enviar
+      closeCentralManagement();
       notify(`🚂 Tren despachado desde ${r.name} hacia ${targetRegion.name}. (Tiempo: 6s)`);
       updateHUD();
 
@@ -792,6 +859,7 @@
       closeCentralManagement();
     }
 
+    setTimeSpeed(120); // Iniciar tiempo normal por defecto
     renderView();
   </script>
 </body>
